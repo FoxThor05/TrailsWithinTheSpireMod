@@ -1,0 +1,8 @@
+{
+  "TRAILSWITHINTHESPIREMOD-STRONG_POWER.description": "Attacks deal [blue]33%[/blue] more damage",
+  "TRAILSWITHINTHESPIREMOD-STRONG_POWER.smartDescription": "Attacks deal [blue]33%[/blue] more damage for [blue]{Amount}[/blue] {Amount:plural:turn|turns}.",
+  "TRAILSWITHINTHESPIREMOD-STRONG_POWER.title": "Strong",
+  "TRAILSWITHINTHESPIREMOD-STURDY_POWER.description": "Gain [blue]33%[/blue] more [gold]Block[/gold] from cards.",
+  "TRAILSWITHINTHESPIREMOD-STURDY_POWER.smartDescription": "Gain [blue]33%[/blue] more [gold]Block[/gold] from cards for [blue]{Amount}[/blue] {Amount:plural:turn|turns}.",
+  "TRAILSWITHINTHESPIREMOD-STURDY_POWER.title": "Sturdy"
+}

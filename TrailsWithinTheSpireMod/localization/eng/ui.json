@@ -1,0 +1,23 @@
+{
+  "TWTS_UI": {
+    "ORBMENT_BUTTON": "Orbment",
+    "ARTS_BUTTON": "Arts"
+  },
+  "TWTS_ORBMENT_SCREEN": {
+    "BACK_BUTTON": "Back",
+    "ELEMENTAL_VALUES_TITLE": "Elemental Values"
+  },
+  "TWTS_ARTS_SCREEN": {
+    "CAST_BUTTON": "Cast",
+    "BACK_BUTTON": "Back"
+  },
+  "ARTS_PILE": {
+    "title": "Arts Pile",
+    "description": "A pile of Arts cards."
+  },
+  "ORBMENT_PILE": {
+    "title": "Orbment Pile",
+    "description": "Your Orbment device."
+  }
+}
+    

@@ -1,0 +1,11 @@
+{
+  "TRAILSWITHINTHESPIREMOD-CREST.description": "#Gain !B! Block.",
+  "TRAILSWITHINTHESPIREMOD-CREST.title": "Crest",
+  "TRAILSWITHINTHESPIREMOD-FIRE_BOLT.description": "#Deal !D! Damage.",
+  "TRAILSWITHINTHESPIREMOD-FIRE_BOLT.title": "Fire Bolt",
+  "TRAILSWITHINTHESPIREMOD-TEAR.description": "#Heal !H! HP.",
+  "TRAILSWITHINTHESPIREMOD-TEAR.title": "Tear",
+  "TRAILSWITHINTHESPIREMOD-CAST.description": "Choose an Orbal Art to move to your hand.",
+  "TRAILSWITHINTHESPIREMOD-CAST.selectionScreenPrompt": "Select {CardsSelected:diff()} {CardsSelected:plural:card|cards} to put in your Hand.",
+  "TRAILSWITHINTHESPIREMOD-CAST.title": "Cast"
+}
