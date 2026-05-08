@@ -27,13 +27,11 @@ public class BattleOrbmentState
         return true;
     }
 
-    // New method: GetSlots
     public List<string?> GetSlots()
     {
         return _slots.Take(UnlockedSlots).Select(q => q?.Id).ToList();
     }
 
-    // New method: SetSlot
     public void SetSlot(int slotIndex, string? quartzId)
     {
         if (slotIndex >= UnlockedSlots)
@@ -52,7 +50,6 @@ public class BattleOrbmentState
             }
             else
             {
-                // Log an error or handle invalid quartzId
                 GD.PrintErr($"Attempted to slot unknown quartz ID: {quartzId}");
             }
         }

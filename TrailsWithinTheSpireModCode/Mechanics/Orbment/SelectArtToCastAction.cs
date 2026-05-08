@@ -10,22 +10,9 @@ using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Screens.Capstones;
 using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment.UI;
-// For GD.Print
-// For CardSelectCmd, CardSelectorPrefs
-// For LocalContext
-// For LocString
-// For NCapstoneContainer
-// For RunManager
-// For OrbmentManager, ArtResolver, OrbmentCastService, ArtsCardPile
-
-// For IArtCard, ArtCardFactory
 
 namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
 
-/// <summary>
-/// Allows the player to select an Art card to cast and then casts it.
-/// Enqueue with: RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(new SelectArtToCastAction(ownerId, playerNetId));
-/// </summary>
 public sealed class SelectArtToCastAction : GameAction
 {
     private readonly ulong _ownerId;
@@ -58,7 +45,6 @@ public sealed class SelectArtToCastAction : GameAction
             return;
         }
 
-        // Get the player's ArtsCardPile
         var artsPile = ArtsCardPile.ArtsPileType.GetPile(player);
         if (artsPile == null)
         {
@@ -68,12 +54,11 @@ public sealed class SelectArtToCastAction : GameAction
 
         var totals = OrbmentManager.Current.GetElementTotals();
         
-        // Filter cards directly from the ArtsCardPile
         var availableArts = artsPile.Cards
             .Where(card => card is IArtCard)
             .Cast<IArtCard>()
             .Where(artCard => OrbmentCastService.CanCastArt(artCard.ArtId, out _))
-            .Cast<CardModel>() // Cast back to CardModel for CardSelectCmd
+            .Cast<CardModel>() 
             .ToList();
 
         if (availableArts.Count == 0)
@@ -89,13 +74,12 @@ public sealed class SelectArtToCastAction : GameAction
             PretendCardsCanBePlayed = true
         };
 
-        // Use GameActionPlayerChoiceContext with this action
         var choiceContext = new GameActionPlayerChoiceContext(this);
 
         GD.Print("ARTS_LOG: SelectArtToCastAction: Opening Selection Grid with cards from ArtsCardPile...");
         var selectedCards = await CardSelectCmd.FromSimpleGrid(
             choiceContext,
-            availableArts, // Pass the filtered cards from the pile
+            availableArts,
             player,
             prefs
         );
@@ -115,7 +99,6 @@ public sealed class SelectArtToCastAction : GameAction
 
     public override INetAction ToNetAction()
     {
-        // Returning null to indicate this action does not need to be synced over multiplayer/replay.
         return null;
     }
 }
