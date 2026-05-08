@@ -8,5 +8,5 @@ public class QuartzDefinition
 
     public Dictionary<Element, int> ElementValues { get; set; } = new();
 
-    public int Tier { get; set; } // 1, 2, 3
+    public int Tier { get; set; } 
 }
