@@ -8,4 +8,10 @@ public static class OrbmentManager
     {
         Current = new BattleOrbmentState();
     }
+    public static List<string> OwnedQuartzIds { get; } = new();
+
+    public static void AddQuartz(string quartzId)
+    {
+        OwnedQuartzIds.Add(quartzId);
+    }
 }

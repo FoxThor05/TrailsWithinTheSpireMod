@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2nxju2rc71nk"
-path="res://.godot/imported/Orbment.png-0ceed19567e37a9fa6ba94bc47bc942d.ctex"
+uid="uid://bx4sv1xw4gmq3"
+path="res://.godot/imported/tier2_space.png-fde375b4c0a463efa64c791f38f13b3e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://TrailsWithinTheSpireMod/assets/Orbment.png"
-dest_files=["res://.godot/imported/Orbment.png-0ceed19567e37a9fa6ba94bc47bc942d.ctex"]
+source_file="res://TrailsWithinTheSpireMod/images/quartz/tier2_space.png"
+dest_files=["res://.godot/imported/tier2_space.png-fde375b4c0a463efa64c791f38f13b3e.ctex"]
 
 [params]
 

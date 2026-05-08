@@ -74,6 +74,18 @@ public class OrbmentConsoleCmd : AbstractConsoleCmd
             case "resetturn":
                 OrbmentCombatState.ResetTurn();
                 return new CmdResult(true, "Orbment turn state reset.");
+            case "addquartz":
+                if (args.Length < 2)
+                    return new CmdResult(false, "Usage: orbment addquartz <quartzId>");
+
+                var ownedQuartz = QuartzDatabase.All.FirstOrDefault(q => q.Id == args[1]);
+
+                if (ownedQuartz == null)
+                    return new CmdResult(false, $"Quartz not found: {args[1]}");
+
+                OrbmentManager.AddQuartz(ownedQuartz.Id);
+
+                return new CmdResult(true, $"Added quartz: {ownedQuartz.Id}");
             default:
                 return new CmdResult(false, $"Unknown orbment command: {args[0]}");
         }

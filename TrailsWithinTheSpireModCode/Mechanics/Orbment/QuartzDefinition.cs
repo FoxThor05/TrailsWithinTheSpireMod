@@ -9,4 +9,6 @@ public class QuartzDefinition
     public Dictionary<Element, int> ElementValues { get; set; } = new();
 
     public int Tier { get; set; } 
+    
+    public string IconPath { get; set; } = "";
 }

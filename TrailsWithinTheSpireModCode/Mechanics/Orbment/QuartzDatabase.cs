@@ -21,7 +21,9 @@ public static class QuartzDatabase
         ElementValues = new Dictionary<Element, int>
         {
             { Element.Earth, 1 }
-        }
+        },
+        IconPath = "res://TrailsWithinTheSpireMod/images/quartz/tier1_fire.png"
+        
     };
 
     public static readonly QuartzDefinition Mind1 = new QuartzDefinition
