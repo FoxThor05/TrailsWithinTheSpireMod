@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://baqpibe72owsf"]
+[gd_scene load_steps=5 format=3 uid="uid://baqpibe72owsf"]
 
 [ext_resource type="Script" uid="uid://dnfn1tnqk7nwb" path="res://TrailsWithinTheSpireModCode/Mechanics/Orbment/UI/NOrbmentOverlayScreen.cs" id="1_yapjx"]
 [ext_resource type="Texture2D" uid="uid://c2nxju2rc71nk" path="res://TrailsWithinTheSpireMod/assets/Orbment.png" id="2_yapjx"]
-[ext_resource type="PackedScene" uid="uid://cg1atda6k71aq" path="res://TrailsWithinTheSpireMod/scenes/QuartzDisplay.tscn" id="3_tywjn"]
+[ext_resource type="PackedScene" uid="uid://cn7jib3hr1uru" path="res://TrailsWithinTheSpireMod/scenes/OrbmentSlotDisplay.tscn" id="3_tywjn"]
+[ext_resource type="Texture2D" uid="uid://copo6wn3g03a3" path="res://TrailsWithinTheSpireMod/assets/pile_button_count.png" id="4_ep8ls"]
 
 [node name="OrbmentScreen" type="Control"]
 layout_mode = 3
@@ -12,20 +13,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_yapjx")
-
-[node name="InteractiveOrbmentSlot" type="GridContainer" parent="."]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.629
-anchor_top = 0.23700002
-anchor_right = 1.0
-anchor_bottom = 0.88900006
-offset_left = 0.3199463
-offset_top = 0.039978027
-offset_bottom = -0.12005615
-grow_horizontal = 2
-grow_vertical = 2
 
 [node name="OrbmentBackground" type="TextureRect" parent="."]
 unique_name_in_owner = true
@@ -42,51 +29,54 @@ unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.1
-anchor_right = 0.43300003
-anchor_bottom = 1.0
-offset_right = 0.6399536
+anchor_right = 0.425
+anchor_bottom = 0.96300006
+offset_left = -44.0
+offset_top = 132.0
+offset_right = 37.0
+offset_bottom = 15.959961
 alignment = 1
 
 [node name="LeftPanel" type="VBoxContainer" parent="ContentArea"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(700, 0)
+custom_minimum_size = Vector2(650, 0)
 layout_mode = 2
 
-[node name="OwnedQuartzSection" type="VBoxContainer" parent="ContentArea/LeftPanel"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(705, 705)
-layout_mode = 2
-
-[node name="Slot" type="RichTextLabel" parent="ContentArea/LeftPanel/OwnedQuartzSection"]
+[node name="Slot" type="RichTextLabel" parent="ContentArea/LeftPanel"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 65)
 layout_mode = 2
 bbcode_enabled = true
-text = "[center]Slot[/center]"
+text = "[center]Quartz Available[/center]"
 fit_content = true
 
-[node name="OwnedQuartzcrollContainer" type="ScrollContainer" parent="ContentArea/LeftPanel/OwnedQuartzSection"]
+[node name="OwnedQuartzSection" type="GridContainer" parent="ContentArea/LeftPanel"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 600)
+layout_mode = 2
+
+[node name="OwnedQuartzScrollContainer" type="ScrollContainer" parent="ContentArea/LeftPanel/OwnedQuartzSection"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 150)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="OwnedQuartzListContainer" type="VBoxContainer" parent="ContentArea/LeftPanel/OwnedQuartzSection/OwnedQuartzcrollContainer"]
-layout_mode = 2
-
-[node name="QuartzDisplay" parent="ContentArea/LeftPanel/OwnedQuartzSection/OwnedQuartzcrollContainer/OwnedQuartzListContainer" instance=ExtResource("3_tywjn")]
-layout_mode = 2
-
-[node name="ElementalValuesSection" type="VBoxContainer" parent="ContentArea/LeftPanel"]
+[node name="OwnedQuartzListContainer" type="GridContainer" parent="ContentArea/LeftPanel/OwnedQuartzSection/OwnedQuartzScrollContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 187)
 layout_mode = 2
+columns = 5
 
-[node name="ElementalValuesLabel" type="RichTextLabel" parent="ContentArea/LeftPanel/ElementalValuesSection"]
+[node name="ElementalValuesLabel" type="RichTextLabel" parent="ContentArea/LeftPanel"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 bbcode_enabled = true
 text = "[center]Elemental Values[/center]"
+
+[node name="ElementalValuesSection" type="VBoxContainer" parent="ContentArea/LeftPanel"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 187)
+layout_mode = 2
 
 [node name="ElementalIconsContainer" type="HBoxContainer" parent="ContentArea/LeftPanel/ElementalValuesSection"]
 unique_name_in_owner = true
@@ -97,3 +87,68 @@ layout_mode = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
+
+[node name="Slots" type="Control" parent="."]
+anchors_preset = 0
+offset_left = 1296.0
+offset_top = 216.0
+offset_right = 1832.0
+offset_bottom = 768.0
+
+[node name="Slot0" parent="Slots" instance=ExtResource("3_tywjn")]
+layout_mode = 0
+offset_left = 184.0
+offset_top = 208.0
+offset_right = 344.0
+offset_bottom = 368.0
+
+[node name="Slot1" parent="Slots" instance=ExtResource("3_tywjn")]
+layout_mode = 0
+offset_left = 224.0
+offset_top = -8.0
+offset_right = 320.0
+offset_bottom = 88.0
+
+[node name="Slot2" parent="Slots" instance=ExtResource("3_tywjn")]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 104.0
+offset_right = 104.0
+offset_bottom = 200.0
+
+[node name="Slot3" parent="Slots" instance=ExtResource("3_tywjn")]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 352.0
+offset_right = 112.0
+offset_bottom = 448.0
+
+[node name="Slot4" parent="Slots" instance=ExtResource("3_tywjn")]
+layout_mode = 0
+offset_left = 224.0
+offset_top = 480.0
+offset_right = 320.0
+offset_bottom = 576.0
+
+[node name="Slot5" parent="Slots" instance=ExtResource("3_tywjn")]
+layout_mode = 0
+offset_left = 424.0
+offset_top = 360.0
+offset_right = 520.0
+offset_bottom = 456.0
+
+[node name="Slot6" parent="Slots" instance=ExtResource("3_tywjn")]
+layout_mode = 0
+offset_left = 424.0
+offset_top = 112.0
+offset_right = 520.0
+offset_bottom = 208.0
+
+[node name="ExitButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1817.0
+offset_top = 944.0
+offset_right = 1920.0
+offset_bottom = 1056.0
+icon = ExtResource("4_ep8ls")

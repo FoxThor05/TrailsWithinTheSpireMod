@@ -89,7 +89,7 @@ public partial class NOrbmentButton : NButton
     {
         if (NOverlayStack.Instance != null)
         {
-            var orbmentScreenScene = GD.Load<PackedScene>("res://TrailsWithinTheSpireMod/scenes/OrbmentDevice.tscn");
+            var orbmentScreenScene = GD.Load<PackedScene>("res://TrailsWithinTheSpireMod/scenes/OrbmentScreen.tscn");
             if (orbmentScreenScene != null)
             {
                 var orbmentScreenInstance = orbmentScreenScene.Instantiate<NOrbmentOverlayScreen>();

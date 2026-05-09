@@ -1,91 +1,150 @@
-﻿using Godot;
-using MegaCrit.Sts2.Core.Entities.Players;
-using MegaCrit.Sts2.Core.Localization;
-using MegaCrit.Sts2.Core.Nodes.CommonUi;
-using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
-using System.Collections.Generic;
-using System.Linq;
-using MegaCrit.Sts2.Core.Combat;
-using MegaCrit.Sts2.Core.Context;
-using MegaCrit.Sts2.Core.Nodes.Screens.Capstones;
+using Godot;
 using MegaCrit.Sts2.Core.Entities.Multiplayer;
-using MegaCrit.Sts2.Core.Nodes.Screens.ScreenContext;
-using MegaCrit.Sts2.Core.Nodes.Combat;
-using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
+using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Nodes.Screens.Overlays;
+using MegaCrit.Sts2.Core.Nodes.Screens.ScreenContext;
+using System.Collections.Generic;
+using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 
 namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment.UI;
 
-public partial class NOrbmentOverlayScreen : Control, IOverlayScreen
+public partial class NOrbmentOverlayScreen : NClickableControl, IOverlayScreen
 {
-    public NetScreenType ScreenType => NetScreenType.None;
-    public bool UseSharedBackstop => true;
+	public NetScreenType ScreenType => NetScreenType.None;
+	public bool UseSharedBackstop => true;
 
-    public void AfterOverlayOpened()
-    {
-        GD.Print("NOrbmentOverlayScreen: AfterOverlayOpened");
-        this.Visible = true;
-    }
+	private Player? _currentPlayer;
 
-    public void AfterOverlayClosed()
-    {
-        GD.Print("NOrbmentOverlayScreen: AfterOverlayClosed");
-        this.Visible = false;
-    }
+	public Control GetControl() => this;
+	public bool IsCurrent(IScreenContext context) => context == this;
+	public void Update() { }
+	public Control? DefaultFocusedControl => null;
 
-    public void AfterOverlayShown()
-    {
-        GD.Print("NOrbmentOverlayScreen: AfterOverlayShown");
-    }
+	public NOrbmentOverlayScreen()
+	{
+		GD.Print("NOrbmentOverlayScreen: Constructor called.");
+	}
 
-    public void AfterOverlayHidden()
-    {
-        GD.Print("NOrbmentOverlayScreen: AfterOverlayHidden");
-    }
-    
-    public Control GetControl() => this;
-    public bool IsCurrent(IScreenContext context) => context == this;
-    public void Update() { }
-    public Control? DefaultFocusedControl => null; 
+	public override void _EnterTree()
+	{
+		base._EnterTree();
+		GD.Print("NOrbmentOverlayScreen: _EnterTree called.");
+	}
 
+	public override void _Ready()
+	{
+		GD.Print("NOrbmentOverlayScreen: _Ready started.");
 
-    private Player? _currentPlayer;
+		FocusMode = FocusModeEnum.All;
+		FocusBehaviorRecursive = FocusBehaviorRecursiveEnum.Enabled;
+		MouseFilter = MouseFilterEnum.Stop;
 
-    public NOrbmentOverlayScreen()
-    {
-        GD.Print("NOrbmentOverlayScreen: Constructor called.");
-    }
+		var exitButton = GetNodeOrNull<Button>("%ExitButton");
+		if (exitButton != null)
+		{
+			exitButton.MouseFilter = MouseFilterEnum.Stop;
+			exitButton.Pressed += OnExitButtonPressed;
+			GD.Print("NOrbmentOverlayScreen: ExitButton connected.");
+		}
+		else
+		{
+			GD.Print("NOrbmentOverlayScreen: ExitButton not found.");
+		}
 
-    public override void _EnterTree()
-    {
-        base._EnterTree();
-        GD.Print("NOrbmentOverlayScreen: _EnterTree called.");
-    }
+		var quartzContainer = GetNodeOrNull<GridContainer>("%OwnedQuartzListContainer");
+		if (quartzContainer == null)
+		{
+			GD.PrintErr("NOrbmentOverlayScreen: OwnedQuartzListContainer not found or is not a GridContainer.");
+			return;
+		}
 
-    public override void _Ready()
-    {
-        GD.Print("NOrbmentOverlayScreen: _Ready started.");
+		quartzContainer.Columns = 4;
 
-        this.FocusMode = Control.FocusModeEnum.All;
-        this.FocusBehaviorRecursive = FocusBehaviorRecursiveEnum.Enabled;
-        this.MouseFilter = MouseFilterEnum.Stop;
+		foreach (var child in quartzContainer.GetChildren())
+		{
+			child.QueueFree();
+		}
 
-        GD.Print("NOrbmentOverlayScreen: _Ready finished.");
-    }
+		var quartzScene = GD.Load<PackedScene>("res://TrailsWithinTheSpireMod/scenes/QuartzDisplay.tscn");
+		if (quartzScene == null)
+		{
+			GD.PrintErr("NOrbmentOverlayScreen: Could not load QuartzDisplay.tscn.");
+			return;
+		}
 
-    public override void _UnhandledInput(InputEvent @event)
-    {
-        if (@event.IsActionPressed("ui_cancel"))
-        {
-            GD.Print("NOrbmentOverlayScreen: Esc detected. Removing from OverlayStack.");
-            NOverlayStack.Instance?.Remove(this);
-            GetViewport().SetInputAsHandled();
-        }
-    }
+		GD.Print($"NOrbmentOverlayScreen: Owned Quartz count: {OrbmentManager.OwnedQuartzIds.Count}");
 
-    public override void _ExitTree()
-    {
-        GD.Print("NOrbmentOverlayScreen: _ExitTree called.");
-        base._ExitTree();
-    }
+		var quartzCounts = new Dictionary<string, int>();
+
+		foreach (var quartzId in OrbmentManager.OwnedQuartzIds)
+		{
+			if (!quartzCounts.ContainsKey(quartzId))
+				quartzCounts[quartzId] = 0;
+
+			quartzCounts[quartzId]++;
+		}
+
+		foreach (var pair in quartzCounts)
+		{
+			var quartz = QuartzDatabase.GetById(pair.Key);
+
+			if (quartz == null)
+			{
+				GD.PrintErr($"NOrbmentOverlayScreen: Unknown quartz id in inventory: {pair.Key}");
+				continue;
+			}
+
+			var display = quartzScene.Instantiate<NQuartzDisplay>();
+			display.SetQuartz(quartz, pair.Value);
+			quartzContainer.AddChild(display);
+
+			GD.Print($"NOrbmentOverlayScreen: Added QuartzDisplay for {pair.Key} x{pair.Value}.");
+		}
+
+		GD.Print("NOrbmentOverlayScreen: _Ready finished.");
+	}
+
+	private void OnExitButtonPressed()
+	{
+		GD.Print("NOrbmentOverlayScreen: ExitButton pressed.");
+		NOverlayStack.Instance?.Remove(this);
+	}
+
+	public override void _UnhandledInput(InputEvent @event)
+	{
+		if (@event.IsActionPressed("ui_cancel"))
+		{
+			GD.Print("NOrbmentOverlayScreen: Esc detected.");
+			NOverlayStack.Instance?.Remove(this);
+			GetViewport().SetInputAsHandled();
+		}
+	}
+
+	public override void _ExitTree()
+	{
+		GD.Print("NOrbmentOverlayScreen: _ExitTree called.");
+		base._ExitTree();
+	}
+
+	public void AfterOverlayOpened()
+	{
+		GD.Print("NOrbmentOverlayScreen: AfterOverlayOpened");
+		Visible = true;
+	}
+
+	public void AfterOverlayClosed()
+	{
+		GD.Print("NOrbmentOverlayScreen: AfterOverlayClosed");
+		Visible = false;
+	}
+
+	public void AfterOverlayShown()
+	{
+		GD.Print("NOrbmentOverlayScreen: AfterOverlayShown");
+	}
+
+	public void AfterOverlayHidden()
+	{
+		GD.Print("NOrbmentOverlayScreen: AfterOverlayHidden");
+	}
 }

@@ -6,7 +6,7 @@ namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
 
 public class BattleOrbmentState
 {
-    public const int MaxSlots = 6;
+    public const int MaxSlots = 7;
 
     public int UnlockedSlots { get; private set; } = 1;
 

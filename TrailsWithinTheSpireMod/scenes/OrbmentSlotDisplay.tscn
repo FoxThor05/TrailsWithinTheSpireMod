@@ -1,0 +1,56 @@
+[gd_scene load_steps=3 format=3 uid="uid://cn7jib3hr1uru"]
+
+[ext_resource type="Texture2D" uid="uid://8xnwx1jl3533" path="res://TrailsWithinTheSpireMod/assets/RoundSlot.png" id="1_omweq"]
+[ext_resource type="Texture2D" uid="uid://c7pir228to8ft" path="res://TrailsWithinTheSpireMod/assets/locked_slot.png" id="2_pcnj0"]
+
+[node name="OrbmentSlotDisplay" type="Control"]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="SlotButton" type="TextureButton" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture_normal = ExtResource("1_omweq")
+stretch_mode = 5
+
+[node name="QuartzMount" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LockOverlay" type="TextureRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_pcnj0")
+stretch_mode = 5
+
+[node name="SelectionGlow" type="TextureRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch_mode = 5

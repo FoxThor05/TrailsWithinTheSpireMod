@@ -2,8 +2,12 @@
 
 [ext_resource type="Script" uid="uid://dho8v4nbdj7x7" path="res://TrailsWithinTheSpireModCode/Mechanics/Orbment/UI/NQuartzDisplay.cs" id="1"]
 
-[node name="QuartzDisplay" type="TextureButton"]
+[node name="QuartzDisplay" type="Control"]
 custom_minimum_size = Vector2(64, 64)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 64.0
+offset_bottom = 64.0
 script = ExtResource("1")
 
 [node name="Icon" type="TextureRect" parent="."]
