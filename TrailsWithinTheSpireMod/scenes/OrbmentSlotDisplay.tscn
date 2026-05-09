@@ -1,5 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://cn7jib3hr1uru"]
+[gd_scene load_steps=4 format=3 uid="uid://cn7jib3hr1uru"]
 
+[ext_resource type="Script" uid="uid://s1s5py5hov6" path="res://TrailsWithinTheSpireModCode/Mechanics/Orbment/UI/NOrbmentSlotDisplay.cs" id="1_jo8mn"]
 [ext_resource type="Texture2D" uid="uid://8xnwx1jl3533" path="res://TrailsWithinTheSpireMod/assets/RoundSlot.png" id="1_omweq"]
 [ext_resource type="Texture2D" uid="uid://c7pir228to8ft" path="res://TrailsWithinTheSpireMod/assets/locked_slot.png" id="2_pcnj0"]
 
@@ -8,6 +9,7 @@ custom_minimum_size = Vector2(96, 96)
 layout_mode = 3
 anchors_preset = 0
 mouse_filter = 2
+script = ExtResource("1_jo8mn")
 
 [node name="SlotButton" type="TextureButton" parent="."]
 unique_name_in_owner = true

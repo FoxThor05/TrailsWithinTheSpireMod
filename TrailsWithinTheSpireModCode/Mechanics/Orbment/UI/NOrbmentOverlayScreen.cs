@@ -1,10 +1,10 @@
 using Godot;
 using MegaCrit.Sts2.Core.Entities.Multiplayer;
 using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Screens.Overlays;
 using MegaCrit.Sts2.Core.Nodes.Screens.ScreenContext;
 using System.Collections.Generic;
-using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 
 namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment.UI;
 
@@ -33,25 +33,41 @@ public partial class NOrbmentOverlayScreen : NClickableControl, IOverlayScreen
 
 	public override void _Ready()
 	{
+		base._Ready();
+
 		GD.Print("NOrbmentOverlayScreen: _Ready started.");
 
 		FocusMode = FocusModeEnum.All;
 		FocusBehaviorRecursive = FocusBehaviorRecursiveEnum.Enabled;
 		MouseFilter = MouseFilterEnum.Stop;
 
+		ConnectExitButton();
+		PopulateQuartzInventory();
+		PopulateOrbmentSlots();
+
+		GD.Print("NOrbmentOverlayScreen: _Ready finished.");
+	}
+
+	private void ConnectExitButton()
+	{
 		var exitButton = GetNodeOrNull<Button>("%ExitButton");
-		if (exitButton != null)
-		{
-			exitButton.MouseFilter = MouseFilterEnum.Stop;
-			exitButton.Pressed += OnExitButtonPressed;
-			GD.Print("NOrbmentOverlayScreen: ExitButton connected.");
-		}
-		else
+
+		if (exitButton == null)
 		{
 			GD.Print("NOrbmentOverlayScreen: ExitButton not found.");
+			return;
 		}
 
+		exitButton.MouseFilter = MouseFilterEnum.Stop;
+		exitButton.Pressed += OnExitButtonPressed;
+
+		GD.Print("NOrbmentOverlayScreen: ExitButton connected.");
+	}
+
+	private void PopulateQuartzInventory()
+	{
 		var quartzContainer = GetNodeOrNull<GridContainer>("%OwnedQuartzListContainer");
+
 		if (quartzContainer == null)
 		{
 			GD.PrintErr("NOrbmentOverlayScreen: OwnedQuartzListContainer not found or is not a GridContainer.");
@@ -65,7 +81,10 @@ public partial class NOrbmentOverlayScreen : NClickableControl, IOverlayScreen
 			child.QueueFree();
 		}
 
-		var quartzScene = GD.Load<PackedScene>("res://TrailsWithinTheSpireMod/scenes/QuartzDisplay.tscn");
+		var quartzScene = GD.Load<PackedScene>(
+            "res://TrailsWithinTheSpireMod/scenes/QuartzDisplay.tscn"
+		);
+
 		if (quartzScene == null)
 		{
 			GD.PrintErr("NOrbmentOverlayScreen: Could not load QuartzDisplay.tscn.");
@@ -95,13 +114,51 @@ public partial class NOrbmentOverlayScreen : NClickableControl, IOverlayScreen
 			}
 
 			var display = quartzScene.Instantiate<NQuartzDisplay>();
+
 			display.SetQuartz(quartz, pair.Value);
+
 			quartzContainer.AddChild(display);
 
 			GD.Print($"NOrbmentOverlayScreen: Added QuartzDisplay for {pair.Key} x{pair.Value}.");
 		}
+	}
 
-		GD.Print("NOrbmentOverlayScreen: _Ready finished.");
+	private void PopulateOrbmentSlots()
+	{
+		var slotsContainer = GetNodeOrNull<Control>("%Slots");
+
+		if (slotsContainer == null)
+		{
+			GD.PrintErr("NOrbmentOverlayScreen: Slots container not found.");
+			return;
+		}
+
+		GD.Print($"NOrbmentOverlayScreen: Populating {BattleOrbmentState.MaxSlots} Orbment slots. Unlocked={OrbmentManager.Current.UnlockedSlots}");
+
+		for (var i = 0; i < BattleOrbmentState.MaxSlots; i++)
+		{
+			var slotNode = slotsContainer.GetNodeOrNull<NOrbmentSlotDisplay>($"Slot{i}");
+
+			if (slotNode == null)
+			{
+				GD.PrintErr($"NOrbmentOverlayScreen: Slot{i} not found or does not have NOrbmentSlotDisplay.");
+				continue;
+			}
+
+			var unlocked = i < OrbmentManager.Current.UnlockedSlots;
+			var quartzId = OrbmentManager.Current.GetSlotQuartzId(i);
+			QuartzDefinition? quartz = null;
+
+			if (quartzId != null)
+			{
+				quartz = QuartzDatabase.GetById(quartzId);
+
+				if (quartz == null)
+					GD.PrintErr($"NOrbmentOverlayScreen: Slot{i} contains unknown quartz id: {quartzId}");
+			}
+
+			slotNode.SetSlot(i, unlocked, quartz);
+		}
 	}
 
 	private void OnExitButtonPressed()
