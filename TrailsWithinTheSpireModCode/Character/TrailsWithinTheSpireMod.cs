@@ -34,7 +34,7 @@ public class TrailsWithinTheSpireMod : PlaceholderCharacterModel
 
     ];
 
-    public override IReadOnlyList<RelicModel> StartingRelics => [ModelDb.Relic<OrbmentTestRelic>()];
+    public override IReadOnlyList<RelicModel> StartingRelics => [ModelDb.Relic<BattleOrbment>()];
 
     public override CardPoolModel CardPool => ModelDb.CardPool<TrailsWithinTheSpireModCardPool>();
     public override RelicPoolModel RelicPool => ModelDb.RelicPool<TrailsWithinTheSpireModRelicPool>();

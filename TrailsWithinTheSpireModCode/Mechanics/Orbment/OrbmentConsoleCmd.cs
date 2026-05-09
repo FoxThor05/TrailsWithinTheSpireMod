@@ -14,7 +14,7 @@ namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
 public class OrbmentConsoleCmd : AbstractConsoleCmd
 {
     public override string CmdName => "orbment";
-    public override string Args => "<unlock|equip|totals>";
+    public override string Args => "<unlock|equip|totals|arts|cast|addquartz>";
     public override string Description => "Debug commands for the Battle Orbment system.";
     public override bool IsNetworked => false;
 

@@ -15,6 +15,9 @@ public partial class NOrbmentOverlayScreen : NClickableControl, IOverlayScreen
 
 	private Player? _currentPlayer;
 
+	private bool _slotDropHandlersConnected;
+	private bool _inventoryDropHandlerConnected;
+
 	public Control GetControl() => this;
 	public bool IsCurrent(IScreenContext context) => context == this;
 	public void Update() { }
@@ -42,10 +45,19 @@ public partial class NOrbmentOverlayScreen : NClickableControl, IOverlayScreen
 		MouseFilter = MouseFilterEnum.Stop;
 
 		ConnectExitButton();
-		PopulateQuartzInventory();
-		PopulateOrbmentSlots();
+		ConnectSlotDropHandlers();
+		ConnectInventoryDropZone();
+
+		RefreshOrbmentScreen();
 
 		GD.Print("NOrbmentOverlayScreen: _Ready finished.");
+	}
+
+	private void RefreshOrbmentScreen()
+	{
+		PopulateQuartzInventory();
+		PopulateOrbmentSlots();
+		RefreshElementalValueDisplays();
 	}
 
 	private void ConnectExitButton()
@@ -62,6 +74,55 @@ public partial class NOrbmentOverlayScreen : NClickableControl, IOverlayScreen
 		exitButton.Pressed += OnExitButtonPressed;
 
 		GD.Print("NOrbmentOverlayScreen: ExitButton connected.");
+	}
+
+	private void ConnectSlotDropHandlers()
+	{
+		if (_slotDropHandlersConnected)
+			return;
+
+		var slotsContainer = GetNodeOrNull<Control>("%Slots");
+
+		if (slotsContainer == null)
+		{
+			GD.PrintErr("NOrbmentOverlayScreen: Slots container not found while connecting drop handlers.");
+			return;
+		}
+
+		for (var i = 0; i < BattleOrbmentState.MaxSlots; i++)
+		{
+			var slotNode = slotsContainer.GetNodeOrNull<NOrbmentSlotDisplay>($"Slot{i}");
+
+			if (slotNode == null)
+			{
+				GD.PrintErr($"NOrbmentOverlayScreen: Slot{i} not found while connecting drop handlers.");
+				continue;
+			}
+
+			slotNode.QuartzDroppedOnSlot += OnQuartzDroppedOnSlot;
+		}
+
+		_slotDropHandlersConnected = true;
+	}
+
+	private void ConnectInventoryDropZone()
+	{
+		if (_inventoryDropHandlerConnected)
+			return;
+
+		var inventoryDropZone = GetNodeOrNull<NQuartzInventoryDropZone>("%QuartzInventoryDropZone");
+
+		if (inventoryDropZone == null)
+		{
+			GD.Print("NOrbmentOverlayScreen: QuartzInventoryDropZone not found. Slot-to-inventory unequip disabled.");
+			return;
+		}
+
+		inventoryDropZone.QuartzDroppedOnInventory += OnQuartzDroppedOnInventory;
+
+		_inventoryDropHandlerConnected = true;
+
+		GD.Print("NOrbmentOverlayScreen: QuartzInventoryDropZone connected.");
 	}
 
 	private void PopulateQuartzInventory()
@@ -116,6 +177,7 @@ public partial class NOrbmentOverlayScreen : NClickableControl, IOverlayScreen
 			var display = quartzScene.Instantiate<NQuartzDisplay>();
 
 			display.SetQuartz(quartz, pair.Value);
+			display.SetDragContextInventory();
 
 			quartzContainer.AddChild(display);
 
@@ -161,6 +223,64 @@ public partial class NOrbmentOverlayScreen : NClickableControl, IOverlayScreen
 		}
 	}
 
+	private void RefreshElementalValueDisplays()
+	{
+		var container = GetNodeOrNull<Control>("%ElementalNumbersContainer");
+
+		if (container == null)
+		{
+			GD.PrintErr("NOrbmentOverlayScreen: ElementalNumbersContainer not found.");
+			return;
+		}
+
+		foreach (var child in container.GetChildren())
+		{
+			if (child is NElementalValueDisplay display)
+				display.Refresh();
+		}
+
+		GD.Print("NOrbmentOverlayScreen: Refreshed elemental value displays.");
+	}
+
+	private void OnQuartzDroppedOnSlot(
+		int targetSlotIndex,
+		string quartzId,
+		string source,
+		int sourceSlotIndex)
+	{
+		GD.Print($"NOrbmentOverlayScreen: Drop on slot target={targetSlotIndex}, quartz={quartzId}, source={source}, sourceSlot={sourceSlotIndex}");
+
+		var changed = false;
+
+		if (source == NQuartzDisplay.DragSourceInventory)
+		{
+			changed = OrbmentManager.EquipOwnedQuartzToSlot(quartzId, targetSlotIndex);
+		}
+		else if (source == NQuartzDisplay.DragSourceSlot)
+		{
+			changed = OrbmentManager.MoveSlotQuartzToSlot(sourceSlotIndex, targetSlotIndex);
+		}
+
+		if (changed)
+			RefreshOrbmentScreen();
+	}
+
+	private void OnQuartzDroppedOnInventory(
+		string quartzId,
+		string source,
+		int sourceSlotIndex)
+	{
+		GD.Print($"NOrbmentOverlayScreen: Drop on inventory quartz={quartzId}, source={source}, sourceSlot={sourceSlotIndex}");
+
+		if (source != NQuartzDisplay.DragSourceSlot)
+			return;
+
+		var changed = OrbmentManager.UnequipSlotToInventory(sourceSlotIndex);
+
+		if (changed)
+			RefreshOrbmentScreen();
+	}
+
 	private void OnExitButtonPressed()
 	{
 		GD.Print("NOrbmentOverlayScreen: ExitButton pressed.");
@@ -180,6 +300,25 @@ public partial class NOrbmentOverlayScreen : NClickableControl, IOverlayScreen
 	public override void _ExitTree()
 	{
 		GD.Print("NOrbmentOverlayScreen: _ExitTree called.");
+
+		var slotsContainer = GetNodeOrNull<Control>("%Slots");
+
+		if (slotsContainer != null)
+		{
+			for (var i = 0; i < BattleOrbmentState.MaxSlots; i++)
+			{
+				var slotNode = slotsContainer.GetNodeOrNull<NOrbmentSlotDisplay>($"Slot{i}");
+
+				if (slotNode != null)
+					slotNode.QuartzDroppedOnSlot -= OnQuartzDroppedOnSlot;
+			}
+		}
+
+		var inventoryDropZone = GetNodeOrNull<NQuartzInventoryDropZone>("%QuartzInventoryDropZone");
+
+		if (inventoryDropZone != null)
+			inventoryDropZone.QuartzDroppedOnInventory -= OnQuartzDroppedOnInventory;
+
 		base._ExitTree();
 	}
 

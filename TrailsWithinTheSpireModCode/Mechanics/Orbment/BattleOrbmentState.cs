@@ -18,12 +18,46 @@ public class BattleOrbmentState
             UnlockedSlots++;
     }
 
+    public bool IsSlotUnlocked(int slotIndex)
+    {
+        return slotIndex >= 0 && slotIndex < UnlockedSlots && slotIndex < MaxSlots;
+    }
+
     public bool EquipQuartz(int slotIndex, QuartzDefinition quartz)
     {
-        if (slotIndex < 0 || slotIndex >= MaxSlots)
+        if (!IsSlotUnlocked(slotIndex))
             return false;
 
-        if (slotIndex >= UnlockedSlots)
+        _slots[slotIndex] = quartz;
+        return true;
+    }
+
+    public QuartzDefinition? GetSlotQuartz(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= MaxSlots)
+            return null;
+
+        return _slots[slotIndex];
+    }
+
+    public string? GetSlotQuartzId(int slotIndex)
+    {
+        return GetSlotQuartz(slotIndex)?.Id;
+    }
+
+    public QuartzDefinition? ClearSlot(int slotIndex)
+    {
+        if (!IsSlotUnlocked(slotIndex))
+            return null;
+
+        var oldQuartz = _slots[slotIndex];
+        _slots[slotIndex] = null;
+        return oldQuartz;
+    }
+
+    public bool SetSlotQuartz(int slotIndex, QuartzDefinition? quartz)
+    {
+        if (!IsSlotUnlocked(slotIndex))
             return false;
 
         _slots[slotIndex] = quartz;
@@ -35,20 +69,9 @@ public class BattleOrbmentState
         return _slots.Take(UnlockedSlots).Select(q => q?.Id).ToList();
     }
 
-    public string? GetSlotQuartzId(int slotIndex)
-    {
-        if (slotIndex < 0 || slotIndex >= MaxSlots)
-            return null;
-
-        return _slots[slotIndex]?.Id;
-    }
-
     public void SetSlot(int slotIndex, string? quartzId)
     {
-        if (slotIndex < 0 || slotIndex >= MaxSlots)
-            return;
-
-        if (slotIndex >= UnlockedSlots)
+        if (!IsSlotUnlocked(slotIndex))
             return;
 
         if (quartzId == null)
@@ -57,7 +80,7 @@ public class BattleOrbmentState
             return;
         }
 
-        QuartzDefinition? quartz = QuartzDatabase.All.Find(q => q.Id == quartzId);
+        QuartzDefinition? quartz = QuartzDatabase.GetById(quartzId);
 
         if (quartz != null)
         {

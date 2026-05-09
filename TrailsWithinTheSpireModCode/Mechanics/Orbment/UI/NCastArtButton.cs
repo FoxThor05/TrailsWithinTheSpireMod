@@ -2,6 +2,8 @@
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.Nodes.Screens.CardSelection;
+using MegaCrit.Sts2.Core.Nodes.Screens.Overlays;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Nodes.Screens;
 using MegaCrit.Sts2.Core.Nodes.Screens.Capstones;
@@ -15,6 +17,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Multiplayer;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Runs;
 namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment.UI;
@@ -98,16 +101,69 @@ public partial class NCastArtButton : NButton
 
     private async void OnButtonPressed(NClickableControl control)
     {
-        if (_localPlayer == null) return;
+        if (_localPlayer == null)
+            return;
 
-        var ownerId = LocalContext.NetId.Value;
-        var playerNetId = (int)_localPlayer.NetId;
-
-        RunManager.Instance.ActionQueueSynchronizer.RequestEnqueue(
-            new SelectArtToCastAction(ownerId, playerNetId)
-        );
+        await OpenArtSelectionLocal();
     }
     
+    private async Task OpenArtSelectionLocal()
+    {
+        if (_localPlayer == null)
+            return;
+
+        var artsPile = ArtsCardPile.ArtsPileType.GetPile(_localPlayer);
+
+        if (artsPile == null)
+        {
+            GD.Print("ARTS_LOG: ERR - ArtsCardPile not found for the player.");
+            return;
+        }
+
+        var availableArts = artsPile.Cards
+            .OfType<CardModel>()
+            .Where(card => card is IArtCard artCard &&
+                           OrbmentCastService.CanCastArt(artCard.ArtId, out _))
+            .ToList();
+
+        if (availableArts.Count == 0)
+        {
+            GD.Print("ARTS_LOG: No arts available to cast from ArtsCardPile.");
+            return;
+        }
+
+        var prefs = new CardSelectorPrefs(new LocString("cards", "ChooseAnOrbalArt"), 1)
+        {
+            RequireManualConfirmation = true,
+            Cancelable = true,
+            PretendCardsCanBePlayed = true
+        };
+
+        NPlayerHand.Instance?.CancelAllCardPlay();
+
+        var screen = NSimpleCardSelectScreen.Create(
+            availableArts,
+            prefs
+        );
+
+        NOverlayStack.Instance.Push(screen);
+
+        var selectedCard = (await screen.CardsSelected()).FirstOrDefault();
+
+        if (selectedCard is not IArtCard selectedArtCard)
+            return;
+
+        GD.Print($"ARTS_LOG: Casting Art ID: {selectedArtCard.ArtId}");
+
+        var result = await OrbmentCastService.CastArt(
+            _localPlayer,
+            selectedArtCard.ArtId
+        );
+
+        GD.Print($"ARTS_LOG: {result}");
+
+        NCapstoneContainer.Instance?.Close();
+    }     
     protected override void OnFocus()
     {
         base.OnFocus();

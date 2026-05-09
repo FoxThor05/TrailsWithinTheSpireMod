@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using Godot;
+using System;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
 
@@ -7,6 +8,9 @@ namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment.
 
 public partial class NOrbmentSlotDisplay : NClickableControl
 {
+    private const float SlotQuartzBaseSize = 64f;
+    private const float SlotQuartzScale = 1.65f;
+
     private int _slotIndex = -1;
     private bool _isUnlocked;
 
@@ -14,6 +18,8 @@ public partial class NOrbmentSlotDisplay : NClickableControl
     private Control? _quartzMount;
     private TextureRect? _lockOverlay;
     private TextureRect? _selectionGlow;
+
+    public event Action<int, string, string, int>? QuartzDroppedOnSlot;
 
     public override void _Ready()
     {
@@ -69,6 +75,43 @@ public partial class NOrbmentSlotDisplay : NClickableControl
         AddQuartzDisplay(quartz);
     }
 
+    public override bool _CanDropData(Vector2 atPosition, Variant data)
+    {
+        if (!_isUnlocked)
+            return false;
+
+        return NQuartzDisplay.TryReadQuartzDragData(
+            data,
+            out _,
+            out _,
+            out _
+        );
+    }
+
+    public override void _DropData(Vector2 atPosition, Variant data)
+    {
+        if (!_isUnlocked)
+            return;
+
+        if (!NQuartzDisplay.TryReadQuartzDragData(
+                data,
+                out var quartzId,
+                out var source,
+                out var sourceSlotIndex))
+        {
+            return;
+        }
+
+        GD.Print($"NOrbmentSlotDisplay: Dropped quartz={quartzId}, source={source}, sourceSlot={sourceSlotIndex}, targetSlot={_slotIndex}");
+
+        QuartzDroppedOnSlot?.Invoke(
+            _slotIndex,
+            quartzId,
+            source,
+            sourceSlotIndex
+        );
+    }
+
     private void ClearQuartzMount()
     {
         if (_quartzMount == null)
@@ -79,8 +122,6 @@ public partial class NOrbmentSlotDisplay : NClickableControl
             child.QueueFree();
         }
     }
-
-    private const float SlotQuartzSize = 64f;
 
     private void AddQuartzDisplay(QuartzDefinition quartz)
     {
@@ -103,6 +144,7 @@ public partial class NOrbmentSlotDisplay : NClickableControl
         var display = quartzScene.Instantiate<NQuartzDisplay>();
 
         display.SetQuartz(quartz);
+        display.SetDragContextSlot(_slotIndex);
         display.MouseFilter = MouseFilterEnum.Stop;
 
         _quartzMount.AddChild(display);
@@ -115,12 +157,15 @@ public partial class NOrbmentSlotDisplay : NClickableControl
         if (_quartzMount == null)
             return;
 
-        var size = new Vector2(SlotQuartzSize, SlotQuartzSize);
+        var baseSize = new Vector2(SlotQuartzBaseSize, SlotQuartzBaseSize);
+        var scaledSize = baseSize * SlotQuartzScale;
 
         display.SetAnchorsPreset(LayoutPreset.TopLeft);
-        display.CustomMinimumSize = size;
-        display.Size = size;
 
-        display.Position = (_quartzMount.Size - size) / 2f;
+        display.CustomMinimumSize = baseSize;
+        display.Size = baseSize;
+        display.Scale = Vector2.One * SlotQuartzScale;
+
+        display.Position = (_quartzMount.Size - scaledSize) / 2f;
     }
 }

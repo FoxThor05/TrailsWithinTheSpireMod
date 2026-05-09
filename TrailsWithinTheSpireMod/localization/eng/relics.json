@@ -2,5 +2,8 @@
 
   "TRAILSWITHINTHESPIREMOD-ORBMENT_TEST_RELIC.description": "6 orbment slots + 10 quartz of each type.",
   "TRAILSWITHINTHESPIREMOD-ORBMENT_TEST_RELIC.flavor": "test",
-  "TRAILSWITHINTHESPIREMOD-ORBMENT_TEST_RELIC.title": "OrbmentTestRelic"
+  "TRAILSWITHINTHESPIREMOD-ORBMENT_TEST_RELIC.title": "OrbmentTestRelic",
+  "BATTLE_ORBMENT.description": "A very versatile Battle Orbment.",
+  "BATTLE_ORBMENT.flavor": "Wait, who put ARCUS slots on an ENIGMA II unit!?",
+  "BATTLE_ORBMENT.title": "Battle Orbment"
 }
