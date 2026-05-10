@@ -52,6 +52,6 @@ public sealed class FireBolt : TrailsWithinTheSpireModCard, IArtCard
         CardKeyword.Ethereal
     ];
     
-    protected override void OnUpgrade() => this.DynamicVars.Damage.UpgradeValueBy(3M); // Corrected to upgrade DamageVar
+    protected override void OnUpgrade() => this.DynamicVars.Damage.UpgradeValueBy(3M);
 
 }

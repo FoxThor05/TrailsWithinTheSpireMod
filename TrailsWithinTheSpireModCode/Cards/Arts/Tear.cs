@@ -35,6 +35,6 @@ public sealed class Tear : TrailsWithinTheSpireModCard, IArtCard
         await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         await CreatureCmd.Heal(Owner.Creature, DynamicVars.Heal.BaseValue);
     }
-    protected override void OnUpgrade() => this.DynamicVars.Heal.UpgradeValueBy(2M); // Corrected to upgrade HealVar
+    protected override void OnUpgrade() => this.DynamicVars.Heal.UpgradeValueBy(2M);
 
 }

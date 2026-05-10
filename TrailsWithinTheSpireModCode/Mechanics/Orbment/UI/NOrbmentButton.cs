@@ -1,8 +1,9 @@
 ﻿using Godot;
+using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Entities.Players;
-using MegaCrit.Sts2.Core.Nodes.Combat;
-using MegaCrit.Sts2.Core.Nodes.Screens.Capstones;
-using BaseLib.Utils;
+using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.Localization;
+using MegaCrit.Sts2.Core.Nodes.HoverTips;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Screens.Overlays;
 
@@ -10,109 +11,150 @@ namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment.
 
 public partial class NOrbmentButton : NButton
 {
+    private const string OrbmentButtonIconPath =
+        "res://TrailsWithinTheSpireMod/assets/orbment_button.png";
+
+    private static readonly Vector2 ButtonSize = new(56, 56);
+    private static readonly HoverTip OrbmentHoverTip = new(
+        new LocString("cards", "ORBMENT_BUTTON.title"),
+        new LocString("cards", "ORBMENT_BUTTON.description")
+    );
     private Player? _localPlayer;
-    private Label? _label;
+    private TextureRect? _icon;
+    private bool _isBuilt;
 
     public static NOrbmentButton Create()
     {
-        var button = new NOrbmentButton();
-        button.Name = "NOrbmentButton";
-        button.CustomMinimumSize = new Vector2(150, 60);
-        return button;
+        return new NOrbmentButton
+        {
+            Name = "NOrbmentButton",
+            CustomMinimumSize = ButtonSize,
+            Size = ButtonSize,
+            Visible = true,
+            MouseFilter = MouseFilterEnum.Stop,
+            ClipContents = true
+        };
     }
 
     public override void _Ready()
     {
-        this.ConnectSignals(); 
-    
-        var bgColor = Color.FromHtml("7b1b16"); 
-        var textColor = Color.FromHtml("ffeecd"); 
-        var strokeColor = Color.FromHtml("3d0c08");
+        if (_isBuilt)
+            return;
 
-        var body = new ColorRect
+        _isBuilt = true;
+
+        // NButton explicitly requires this instead of base._Ready().
+        ConnectSignals();
+
+        CustomMinimumSize = ButtonSize;
+        Size = ButtonSize;
+        ClipContents = true;
+        MouseFilter = MouseFilterEnum.Stop;
+
+        _icon = new TextureRect
         {
-            Name = "ButtonBackground",
-            Color = bgColor,
-            MouseFilter = MouseFilterEnum.Ignore
+            Name = "OrbmentIcon",
+            MouseFilter = MouseFilterEnum.Ignore,
+            CustomMinimumSize = Vector2.Zero,
+            Size = ButtonSize,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered
         };
-        body.SetAnchorsPreset(LayoutPreset.FullRect);
-        AddChild(body);
-        
-        var border = new Panel
+
+        _icon.SetAnchorsPreset(LayoutPreset.FullRect);
+        _icon.SetOffsetsPreset(LayoutPreset.FullRect);
+
+        var texture = GD.Load<Texture2D>(OrbmentButtonIconPath);
+
+        if (texture == null)
         {
-            Name = "ButtonBorder",
-            MouseFilter = MouseFilterEnum.Ignore
-        };
-        border.SetAnchorsPreset(LayoutPreset.FullRect);
-    
-        var borderStyle = new StyleBoxFlat
+            GD.PrintErr($"ORBMENT_LOG: Could not load Orbment button icon at '{OrbmentButtonIconPath}'.");
+        }
+        else
         {
-            DrawCenter = false,
-            BorderWidthLeft = 4,
-            BorderWidthTop = 4,
-            BorderWidthRight = 4,
-            BorderWidthBottom = 4,
-            BorderColor = strokeColor,
-            ExpandMarginLeft = 2,
-            ExpandMarginRight = 2,
-            ExpandMarginTop = 2,
-            ExpandMarginBottom = 2
-        };
-        border.AddThemeStyleboxOverride("panel", borderStyle);
-        AddChild(border);
+            _icon.Texture = texture;
+        }
 
-        _label = new Label();
-        _label.Text = "ORBMENT DEVICE";
-        _label.HorizontalAlignment = HorizontalAlignment.Center;
-        _label.VerticalAlignment = VerticalAlignment.Center;
-        _label.SetAnchorsPreset(LayoutPreset.FullRect);
-        _label.MouseFilter = MouseFilterEnum.Ignore;
+        AddChild(_icon);
 
-        _label.AddThemeColorOverride("font_color", textColor);
-        _label.AddThemeConstantOverride("outline_size", 8);
-        _label.AddThemeColorOverride("font_outline_color", strokeColor);
-        _label.AddThemeFontSizeOverride("font_size", 16);
-    
-        AddChild(_label);
+        Released += OnButtonPressed;
 
-        this.Released += OnButtonPressed;
+        GD.Print("ORBMENT_LOG: NOrbmentButton _Ready completed.");
+    }
+
+    public void Initialize()
+    {
+        Visible = true;
+        Enable();
+
+        GD.Print("ORBMENT_LOG: NOrbmentButton initialized without player.");
     }
 
     public void Initialize(Player player)
     {
         _localPlayer = player;
-        this.Visible = true;
-        this.Enable();
+        Initialize();
+
+        GD.Print("ORBMENT_LOG: NOrbmentButton initialized with player.");
     }
 
     private void OnButtonPressed(NClickableControl control)
     {
-        if (NOverlayStack.Instance != null)
+        if (CombatManager.Instance != null && !CombatManager.Instance.IsOverOrEnding)
         {
-            var orbmentScreenScene = GD.Load<PackedScene>("res://TrailsWithinTheSpireMod/scenes/OrbmentScreen.tscn");
-            if (orbmentScreenScene != null)
-            {
-                var orbmentScreenInstance = orbmentScreenScene.Instantiate<NOrbmentOverlayScreen>();
-                NOverlayStack.Instance.Push(orbmentScreenInstance);
-            }
-            else
-            {
-                GD.PrintErr("Failed to load OrbmentScreen.tscn for NOrbmentButton.");
-            }
+            GD.Print("ORBMENT_LOG: Orbment screen cannot be opened during combat.");
+            return;
         }
+
+        if (NOverlayStack.Instance == null)
+        {
+            GD.PrintErr("ORBMENT_LOG: NOverlayStack.Instance is null.");
+            return;
+        }
+
+        var orbmentScreenScene = GD.Load<PackedScene>(
+            "res://TrailsWithinTheSpireMod/scenes/OrbmentScreen.tscn"
+        );
+
+        if (orbmentScreenScene == null)
+        {
+            GD.PrintErr("ORBMENT_LOG: Failed to load OrbmentScreen.tscn.");
+            return;
+        }
+
+        var orbmentScreenInstance =
+            orbmentScreenScene.Instantiate<NOrbmentOverlayScreen>();
+
+        NOverlayStack.Instance.Push(orbmentScreenInstance);
     }
-    
+
     protected override void OnFocus()
     {
         base.OnFocus();
-        var tween = CreateTween().SetParallel();
-        tween.TweenProperty(this, "scale", new Vector2(1.05f, 1.05f), 0.1);
+
+        var hoverTipSet = NHoverTipSet.CreateAndShow(this, OrbmentHoverTip);
+        hoverTipSet?.SetGlobalPosition(
+            GlobalPosition + new Vector2(Size.X - hoverTipSet.Size.X, Size.Y + 20f)
+        );
+
+        if (_icon == null)
+            return;
+
+        _icon.PivotOffset = _icon.Size / 2f;
+
+        var tween = CreateTween();
+        tween.TweenProperty(_icon, "scale", Vector2.One * 1.12f, 0.1);
     }
 
     protected override void OnUnfocus()
     {
         base.OnUnfocus();
+
+        NHoverTipSet.Remove(this);
+
+        if (_icon == null)
+            return;
+
         var tween = CreateTween();
-        tween.TweenProperty(this, "scale", Vector2.One, 0.1);
-    }
-}
+        tween.TweenProperty(_icon, "scale", Vector2.One, 0.1);
+    }}

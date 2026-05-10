@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
 
@@ -42,4 +43,9 @@ public static class ArtDatabase
         Tear,
         FireBolt
     };
+
+    public static ArtDefinition? GetById(string id)
+    {
+        return All.FirstOrDefault(art => art.Id == id);
+    }
 }

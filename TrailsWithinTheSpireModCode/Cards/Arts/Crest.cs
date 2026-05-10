@@ -25,7 +25,7 @@ public sealed class Crest : TrailsWithinTheSpireModCard, IArtCard
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
-        new BlockVar(9M, ValueProp.Move)
+        new BlockVar(6M, ValueProp.Move)
     ];
 
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
@@ -38,5 +38,5 @@ public sealed class Crest : TrailsWithinTheSpireModCard, IArtCard
     {
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
     }
-    protected override void OnUpgrade() => this.DynamicVars.Block.UpgradeValueBy(3M); // Corrected to upgrade BlockVar
+    protected override void OnUpgrade() => this.DynamicVars.Block.UpgradeValueBy(3M);
 }

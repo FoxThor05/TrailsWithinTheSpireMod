@@ -11,12 +11,15 @@
   "attack_1.title": "Attack 1",
   "attack_1.description": "A basic Fire quartz.",
 
-  "guard_1.title": "Guard 1",
+  "guard_1.title": "Defense 1",
   "guard_1.description": "A basic Earth quartz.",
 
   "mind_1.title": "Mind 1",
   "mind_1.description": "A basic Mirage quartz.",
 
   "hp_1.title": "HP 1",
-  "hp_1.description": "A basic Water quartz."
+  "hp_1.description": "A basic Water quartz.",
+
+  "ORBMENT_BUTTON.title": "Orbment",
+  "ORBMENT_BUTTON.description": "Open the Battle Orbment menu."
 }
