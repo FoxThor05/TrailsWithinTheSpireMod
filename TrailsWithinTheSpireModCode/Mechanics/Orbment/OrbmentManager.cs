@@ -3,23 +3,50 @@ using MegaCrit.Sts2.Core.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Relics;
 
 namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
 
 public static class OrbmentManager
 {
-    public static BattleOrbmentState Current { get; private set; } = new();
+    private static readonly BattleOrbmentState FallbackState = new();
+    private static readonly List<string> FallbackOwnedQuartzIds = new();
 
-    private static readonly List<string> _ownedQuartzIds = new();
+    private static BattleOrbment? _activeBattleOrbment;
 
-    public static IReadOnlyList<string> OwnedQuartzIds => _ownedQuartzIds;
+    public static BattleOrbmentState Current =>
+        _activeBattleOrbment != null
+            ? new BattleOrbmentState(_activeBattleOrbment)
+            : FallbackState;
+
+    public static IReadOnlyList<string> OwnedQuartzIds =>
+        _activeBattleOrbment != null
+            ? GetOwnedQuartzIdsFromRelic(_activeBattleOrbment)
+            : FallbackOwnedQuartzIds;
 
     public static event Action? OrbmentChanged;
 
+    public static void RegisterBattleOrbment(BattleOrbment battleOrbment)
+    {
+        _activeBattleOrbment = battleOrbment;
+        OrbmentRelicFields.Normalize(battleOrbment);
+
+        GD.Print("ORBMENT_LOG: BattleOrbment registered as active Orbment save holder.");
+    }
+
     public static void Reset()
     {
-        Current = new BattleOrbmentState();
-        _ownedQuartzIds.Clear();
+        if (_activeBattleOrbment != null)
+        {
+            OrbmentRelicFields.UnlockedSlots[_activeBattleOrbment] = 1;
+            OrbmentRelicFields.OwnedQuartz[_activeBattleOrbment] = "";
+            OrbmentRelicFields.EquippedQuartz[_activeBattleOrbment] = OrbmentRelicFields.EmptySlotsEncoded;
+            OrbmentRelicFields.Normalize(_activeBattleOrbment);
+        }
+        else
+        {
+            FallbackOwnedQuartzIds.Clear();
+        }
 
         NotifyOrbmentChanged();
     }
@@ -32,16 +59,27 @@ public static class OrbmentManager
             return;
         }
 
-        _ownedQuartzIds.Add(quartzId);
+        if (_activeBattleOrbment != null)
+        {
+            var ownedQuartz = GetOwnedQuartzIdsFromRelic(_activeBattleOrbment);
+            ownedQuartz.Add(quartzId);
+            SetOwnedQuartzIdsOnRelic(_activeBattleOrbment, ownedQuartz);
 
-        GD.Print($"ORBMENT_LOG: Added quartz '{quartzId}'. Owned quartz count: {_ownedQuartzIds.Count}");
+            GD.Print($"ORBMENT_LOG: Added quartz '{quartzId}'. Owned quartz count: {ownedQuartz.Count}");
+        }
+        else
+        {
+            FallbackOwnedQuartzIds.Add(quartzId);
+
+            GD.Print($"ORBMENT_LOG: Added quartz '{quartzId}' to fallback inventory. Owned quartz count: {FallbackOwnedQuartzIds.Count}");
+        }
 
         NotifyOrbmentChanged();
     }
 
     public static int CountOwnedQuartz(string quartzId)
     {
-        return _ownedQuartzIds.Count(id => id == quartzId);
+        return OwnedQuartzIds.Count(id => id == quartzId);
     }
 
     public static IReadOnlyList<QuartzDefinition> GetEquippedQuartz()
@@ -84,7 +122,7 @@ public static class OrbmentManager
         var oldQuartz = Current.GetSlotQuartz(slotIndex);
 
         if (oldQuartz != null)
-            _ownedQuartzIds.Add(oldQuartz.Id);
+            AddOwnedQuartzNoNotify(oldQuartz.Id);
 
         Current.EquipQuartz(slotIndex, quartz);
 
@@ -142,7 +180,7 @@ public static class OrbmentManager
             return false;
         }
 
-        _ownedQuartzIds.Add(removedQuartz.Id);
+        AddOwnedQuartzNoNotify(removedQuartz.Id);
 
         GD.Print($"ORBMENT_LOG: Unequipped '{removedQuartz.Id}' from slot {slotIndex} to inventory.");
 
@@ -158,14 +196,55 @@ public static class OrbmentManager
         TaskHelper.RunSafely(QuartzEffectDispatcher.ApplyPassiveEffectsFromActiveBattleOrbment());
     }
 
+    private static List<string> GetOwnedQuartzIdsFromRelic(BattleOrbment relic)
+    {
+        OrbmentRelicFields.Normalize(relic);
+        return OrbmentRelicFields.DecodeOwnedQuartz(OrbmentRelicFields.OwnedQuartz[relic]);
+    }
+
+    private static void SetOwnedQuartzIdsOnRelic(BattleOrbment relic, List<string> ownedQuartzIds)
+    {
+        OrbmentRelicFields.OwnedQuartz[relic] = OrbmentRelicFields.EncodeOwnedQuartz(ownedQuartzIds);
+        OrbmentRelicFields.Normalize(relic);
+    }
+
+    private static void AddOwnedQuartzNoNotify(string quartzId)
+    {
+        if (_activeBattleOrbment != null)
+        {
+            var ownedQuartz = GetOwnedQuartzIdsFromRelic(_activeBattleOrbment);
+            ownedQuartz.Add(quartzId);
+            SetOwnedQuartzIdsOnRelic(_activeBattleOrbment, ownedQuartz);
+        }
+        else
+        {
+            FallbackOwnedQuartzIds.Add(quartzId);
+        }
+    }
+
     private static bool RemoveOwnedQuartzNoNotify(string quartzId)
     {
-        var index = _ownedQuartzIds.IndexOf(quartzId);
+        if (_activeBattleOrbment != null)
+        {
+            var ownedQuartz = GetOwnedQuartzIdsFromRelic(_activeBattleOrbment);
+            var index = ownedQuartz.IndexOf(quartzId);
 
-        if (index < 0)
+            if (index < 0)
+                return false;
+
+            ownedQuartz.RemoveAt(index);
+            SetOwnedQuartzIdsOnRelic(_activeBattleOrbment, ownedQuartz);
+
+            return true;
+        }
+
+        var fallbackIndex = FallbackOwnedQuartzIds.IndexOf(quartzId);
+
+        if (fallbackIndex < 0)
             return false;
 
-        _ownedQuartzIds.RemoveAt(index);
+        FallbackOwnedQuartzIds.RemoveAt(fallbackIndex);
+
         return true;
     }
 }

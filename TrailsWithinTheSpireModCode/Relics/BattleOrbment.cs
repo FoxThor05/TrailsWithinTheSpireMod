@@ -15,13 +15,7 @@ public sealed class BattleOrbment : TrailsWithinTheSpireModRelic
 
     public override async Task AfterObtained()
     {
-        OrbmentRelicFields.UnlockedSlots[this] = 1;
-
-        if (string.IsNullOrWhiteSpace(OrbmentRelicFields.EquippedQuartz[this]))
-            OrbmentRelicFields.EquippedQuartz[this] = OrbmentRelicFields.EmptySlotsEncoded;
-
-        if (string.IsNullOrWhiteSpace(OrbmentRelicFields.OwnedQuartz[this]))
-            OrbmentRelicFields.OwnedQuartz[this] = "";
+        OrbmentRelicFields.Normalize(this);
 
         QuartzEffectDispatcher.RegisterBattleOrbment(this);
         await QuartzEffectDispatcher.ApplyPassiveEffects(this);
@@ -29,6 +23,8 @@ public sealed class BattleOrbment : TrailsWithinTheSpireModRelic
 
     public override async Task AfterRoomEntered(AbstractRoom room)
     {
+        OrbmentRelicFields.Normalize(this);
+
         QuartzEffectDispatcher.RegisterBattleOrbment(this);
         await QuartzEffectDispatcher.ApplyPassiveEffects(this);
 

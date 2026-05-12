@@ -3,12 +3,12 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Rooms;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using MegaCrit.Sts2.Core.Models;
 using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Relics;
 
 namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
@@ -17,15 +17,15 @@ public static class QuartzEffectDispatcher
 {
     private const int Attack1StrengthBonus = 1;
 
+    // Balance value for HP 1.
     private const int Hp1MaxHpBonus = 4;
 
     private static BattleOrbment? _activeBattleOrbment;
 
-    private static int _appliedMaxHpBonus;
-
     public static void RegisterBattleOrbment(BattleOrbment battleOrbment)
     {
         _activeBattleOrbment = battleOrbment;
+        OrbmentManager.RegisterBattleOrbment(battleOrbment);
     }
 
     public static async Task ApplyPassiveEffectsFromActiveBattleOrbment()
@@ -76,7 +76,7 @@ public static class QuartzEffectDispatcher
                 creature,
                 strengthAmount,
                 creature,
-                null
+                (CardModel?)null
             );
 
             GD.Print($"ORBMENT_LOG: BattleOrbment applied +{strengthAmount} Strength from Attack Quartz.");
@@ -85,8 +85,12 @@ public static class QuartzEffectDispatcher
 
     private static async Task ApplyHpQuartzPassive(BattleOrbment battleOrbment, Creature creature)
     {
+        OrbmentRelicFields.Normalize(battleOrbment);
+
         var desiredMaxHpBonus = GetDesiredMaxHpBonus();
-        var delta = desiredMaxHpBonus - _appliedMaxHpBonus;
+        var alreadyAppliedMaxHpBonus = OrbmentRelicFields.AppliedMaxHpBonus[battleOrbment];
+
+        var delta = desiredMaxHpBonus - alreadyAppliedMaxHpBonus;
 
         if (delta == 0)
             return;
@@ -101,7 +105,7 @@ public static class QuartzEffectDispatcher
         if (creature.CurrentHp > creature.MaxHp)
             await CreatureCmd.SetCurrentHp(creature, creature.MaxHp);
 
-        _appliedMaxHpBonus = desiredMaxHpBonus;
+        OrbmentRelicFields.AppliedMaxHpBonus[battleOrbment] = desiredMaxHpBonus;
 
         battleOrbment.Flash();
 

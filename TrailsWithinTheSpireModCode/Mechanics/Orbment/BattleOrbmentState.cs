@@ -1,6 +1,7 @@
+using Godot;
 using System.Collections.Generic;
 using System.Linq;
-using Godot;
+using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Relics;
 
 namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
 
@@ -8,14 +9,47 @@ public class BattleOrbmentState
 {
     public const int MaxSlots = 7;
 
-    public int UnlockedSlots { get; private set; } = 1;
+    private readonly BattleOrbment? _relic;
 
-    private readonly QuartzDefinition?[] _slots = new QuartzDefinition?[MaxSlots];
+    private int _fallbackUnlockedSlots = 1;
+    private readonly QuartzDefinition?[] _fallbackSlots = new QuartzDefinition?[MaxSlots];
+
+    public BattleOrbmentState()
+    {
+    }
+
+    public BattleOrbmentState(BattleOrbment relic)
+    {
+        _relic = relic;
+        OrbmentRelicFields.Normalize(relic);
+    }
+
+    public int UnlockedSlots
+    {
+        get
+        {
+            if (_relic == null)
+                return _fallbackUnlockedSlots;
+
+            OrbmentRelicFields.Normalize(_relic);
+            return OrbmentRelicFields.UnlockedSlots[_relic];
+        }
+    }
 
     public void UnlockSlot()
     {
-        if (UnlockedSlots < MaxSlots)
-            UnlockedSlots++;
+        if (_relic != null)
+        {
+            OrbmentRelicFields.Normalize(_relic);
+
+            if (OrbmentRelicFields.UnlockedSlots[_relic] < MaxSlots)
+                OrbmentRelicFields.UnlockedSlots[_relic]++;
+
+            return;
+        }
+
+        if (_fallbackUnlockedSlots < MaxSlots)
+            _fallbackUnlockedSlots++;
     }
 
     public bool IsSlotUnlocked(int slotIndex)
@@ -25,24 +59,36 @@ public class BattleOrbmentState
 
     public bool EquipQuartz(int slotIndex, QuartzDefinition quartz)
     {
-        if (!IsSlotUnlocked(slotIndex))
-            return false;
-
-        _slots[slotIndex] = quartz;
-        return true;
+        return SetSlotQuartz(slotIndex, quartz);
     }
 
     public QuartzDefinition? GetSlotQuartz(int slotIndex)
     {
-        if (slotIndex < 0 || slotIndex >= MaxSlots)
+        var quartzId = GetSlotQuartzId(slotIndex);
+
+        if (string.IsNullOrWhiteSpace(quartzId))
             return null;
 
-        return _slots[slotIndex];
+        return QuartzDatabase.GetById(quartzId);
     }
 
     public string? GetSlotQuartzId(int slotIndex)
     {
-        return GetSlotQuartz(slotIndex)?.Id;
+        if (slotIndex < 0 || slotIndex >= MaxSlots)
+            return null;
+
+        if (_relic != null)
+        {
+            OrbmentRelicFields.Normalize(_relic);
+
+            var slots = OrbmentRelicFields.DecodeSlots(OrbmentRelicFields.EquippedQuartz[_relic]);
+
+            return string.IsNullOrWhiteSpace(slots[slotIndex])
+                ? null
+                : slots[slotIndex];
+        }
+
+        return _fallbackSlots[slotIndex]?.Id;
     }
 
     public QuartzDefinition? ClearSlot(int slotIndex)
@@ -50,8 +96,10 @@ public class BattleOrbmentState
         if (!IsSlotUnlocked(slotIndex))
             return null;
 
-        var oldQuartz = _slots[slotIndex];
-        _slots[slotIndex] = null;
+        var oldQuartz = GetSlotQuartz(slotIndex);
+
+        SetSlotQuartz(slotIndex, null);
+
         return oldQuartz;
     }
 
@@ -60,13 +108,30 @@ public class BattleOrbmentState
         if (!IsSlotUnlocked(slotIndex))
             return false;
 
-        _slots[slotIndex] = quartz;
+        if (_relic != null)
+        {
+            OrbmentRelicFields.Normalize(_relic);
+
+            var slots = OrbmentRelicFields.DecodeSlots(OrbmentRelicFields.EquippedQuartz[_relic]);
+            slots[slotIndex] = quartz?.Id;
+
+            OrbmentRelicFields.EquippedQuartz[_relic] = OrbmentRelicFields.EncodeSlots(slots);
+
+            return true;
+        }
+
+        _fallbackSlots[slotIndex] = quartz;
         return true;
     }
 
     public List<string?> GetSlots()
     {
-        return _slots.Take(UnlockedSlots).Select(q => q?.Id).ToList();
+        var result = new List<string?>();
+
+        for (var i = 0; i < UnlockedSlots; i++)
+            result.Add(GetSlotQuartzId(i));
+
+        return result;
     }
 
     public void SetSlot(int slotIndex, string? quartzId)
@@ -74,17 +139,17 @@ public class BattleOrbmentState
         if (!IsSlotUnlocked(slotIndex))
             return;
 
-        if (quartzId == null)
+        if (string.IsNullOrWhiteSpace(quartzId))
         {
-            _slots[slotIndex] = null;
+            SetSlotQuartz(slotIndex, null);
             return;
         }
 
-        QuartzDefinition? quartz = QuartzDatabase.GetById(quartzId);
+        var quartz = QuartzDatabase.GetById(quartzId);
 
         if (quartz != null)
         {
-            _slots[slotIndex] = quartz;
+            SetSlotQuartz(slotIndex, quartz);
         }
         else
         {
@@ -96,9 +161,17 @@ public class BattleOrbmentState
     {
         var totals = new Dictionary<Element, int>();
 
-        foreach (var quartz in _slots.Where(q => q != null))
+        for (var i = 0; i < MaxSlots; i++)
         {
-            foreach (var pair in quartz!.ElementValues)
+            if (!IsSlotUnlocked(i))
+                continue;
+
+            var quartz = GetSlotQuartz(i);
+
+            if (quartz == null)
+                continue;
+
+            foreach (var pair in quartz.ElementValues)
             {
                 if (!totals.ContainsKey(pair.Key))
                     totals[pair.Key] = 0;

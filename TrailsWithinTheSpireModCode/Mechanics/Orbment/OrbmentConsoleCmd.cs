@@ -28,6 +28,7 @@ public class OrbmentConsoleCmd : AbstractConsoleCmd
         {
             case "unlock":
                 OrbmentManager.Current.UnlockSlot();
+                OrbmentManager.NotifyOrbmentChanged();
                 return new CmdResult(true, $"Unlocked slots: {OrbmentManager.Current.UnlockedSlots}");
 
             case "equip":
@@ -45,6 +46,8 @@ public class OrbmentConsoleCmd : AbstractConsoleCmd
 
                 if (!OrbmentManager.Current.EquipQuartz(slotIndex, quartz))
                     return new CmdResult(false, $"Could not equip {quartz.Id} in slot {slotIndex}.");
+
+                OrbmentManager.NotifyOrbmentChanged();
 
                 return new CmdResult(true, $"Equipped {quartz.Id} in slot {slotIndex}.");
             }
