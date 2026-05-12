@@ -7,13 +7,16 @@ namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment.
 [HarmonyPatch(typeof(NTopBarButton), "_Ready")]
 public static class NTopBarMapButtonOrbmentPatch
 {
+    private const string OrbmentButtonName = "OrbmentTopBarButton";
+
     [HarmonyPostfix]
-    public static void Postfix(NTopBarButton __instance)
+    public static void Postfix(object __instance)
     {
         if (__instance is not NTopBarMapButton mapButton)
             return;
 
-        GD.Print("ORBMENT_LOG: NTopBarButton._Ready patch fired for NTopBarMapButton.");
+        if (!GodotObject.IsInstanceValid(mapButton))
+            return;
 
         Callable.From(() => InjectDeferred(mapButton)).CallDeferred();
     }
@@ -21,41 +24,40 @@ public static class NTopBarMapButtonOrbmentPatch
     private static void InjectDeferred(NTopBarMapButton mapButton)
     {
         if (!GodotObject.IsInstanceValid(mapButton))
-        {
-            GD.PrintErr("ORBMENT_LOG: Deferred top bar injection failed because map button is invalid.");
             return;
-        }
 
         var parent = mapButton.GetParent();
 
         if (parent == null || !GodotObject.IsInstanceValid(parent))
         {
-            GD.PrintErr("ORBMENT_LOG: Deferred top bar injection failed because parent is invalid.");
+            GD.PrintErr("ORBMENT_LOG: Could not inject Orbment top bar button because map button parent is null.");
             return;
         }
 
-        GD.Print($"ORBMENT_LOG: Deferred top bar injection. Parent is '{parent.Name}' type '{parent.GetType().FullName}'.");
+        if (parent.GetNodeOrNull<NOrbmentButton>(OrbmentButtonName) != null)
+            return;
 
-        if (parent.GetNodeOrNull<NOrbmentButton>("NOrbmentButton") != null)
+        foreach (var child in parent.GetChildren())
         {
-            GD.Print("ORBMENT_LOG: NOrbmentButton already exists in top bar parent.");
-            return;
+            if (child.Name.ToString() == OrbmentButtonName)
+                return;
         }
 
-        var orbmentButton = NOrbmentButton.Create();
-        orbmentButton.Name = "NOrbmentButton";
-        orbmentButton.CustomMinimumSize = new Vector2(56, 56);
-        orbmentButton.Size = new Vector2(56, 56);
+        var orbmentButton = new NOrbmentButton
+        {
+            Name = OrbmentButtonName,
+            CustomMinimumSize = mapButton.CustomMinimumSize,
+            Size = mapButton.Size,
+            MouseFilter = Control.MouseFilterEnum.Stop
+        };
 
         parent.AddChild(orbmentButton);
 
         var targetIndex = mapButton.GetIndex() + 1;
 
-        if (orbmentButton.GetParent() == parent)
+        if (targetIndex >= 0 && targetIndex < parent.GetChildCount())
             parent.MoveChild(orbmentButton, targetIndex);
 
-        orbmentButton.Initialize();
-
-        GD.Print($"ORBMENT_LOG: Orbment button injected into top bar parent at index {targetIndex}.");
+        GD.Print($"ORBMENT_LOG: Orbment button injected into top bar parent '{parent.Name}' at index {orbmentButton.GetIndex()}.");
     }
 }

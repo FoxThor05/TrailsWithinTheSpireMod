@@ -12,12 +12,7 @@ public static class NCardArtRequirementDisplayPatch
 {
     private const string RequirementDisplayNodeName = "ArtRequirementDisplay";
 
-    // Bigger number = moves panel left, overlapping the portrait more.
-    // Smaller number = moves panel farther right.
     private const float PortraitRightOverlap = 8f;
-
-    // Bigger number = moves panel lower relative to the portrait.
-    // Smaller number = moves panel higher.
     private const float PortraitTopOffset = 4f;
 
     [HarmonyPostfix]
@@ -34,14 +29,16 @@ public static class NCardArtRequirementDisplayPatch
         if (!card.IsNodeReady())
             return;
 
-        // Always clean old versions first, because earlier patch versions placed this node
-        // under different parents and pooled cards can keep stale children around.
         RemoveAllRequirementDisplays(card);
 
         if (card.Model is not IArtCard artCard)
             return;
 
-        if (card.DisplayingPile != ArtsCardPile.ArtsPileType)
+        var shouldShow =
+            card.DisplayingPile == ArtsCardPile.ArtsPileType ||
+            NOrbalArtsSelectionRegistry.IsOrbalArtsCard(card.Model);
+
+        if (!shouldShow)
             return;
 
         var artDefinition = ArtDatabase.GetById(artCard.ArtId);
@@ -61,6 +58,17 @@ public static class NCardArtRequirementDisplayPatch
             return;
         }
 
+        if (NOrbalArtsSelectionRegistry.IsOrbalArtsCard(card.Model))
+        {
+            card.Modulate = NOrbalArtsSelectionRegistry.IsDisabled(card.Model)
+                ? new Color(0.45f, 0.45f, 0.45f, 0.65f)
+                : Colors.White;
+        }
+        else
+        {
+            card.Modulate = Colors.White;
+        }
+
         var display = new NArtRequirementDisplay
         {
             Name = RequirementDisplayNodeName,
@@ -75,7 +83,6 @@ public static class NCardArtRequirementDisplayPatch
 
         if (portrait == null || !TryGetLocalPositionRelativeToAncestor(portrait, card.Body, out var portraitLocalPosition))
         {
-            // Fallback tuned for normal card coordinates.
             display.Position = new Vector2(238f, 70f);
             return;
         }

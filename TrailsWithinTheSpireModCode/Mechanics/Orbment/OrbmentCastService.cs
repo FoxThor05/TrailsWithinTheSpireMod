@@ -20,9 +20,9 @@ public static class OrbmentCastService
             return false;
         }
 
-        if (OrbmentCombatState.UsedArtThisTurn)
+        if (OrbmentCombatState.RemainingCastsThisTurn <= 0)
         {
-            failureReason = "You can only cast 1 Art per turn.";
+            failureReason = "No casts remaining this turn.";
             return false;
         }
 
@@ -47,7 +47,7 @@ public static class OrbmentCastService
         if (!ArtCardFactory.TryCreate(art.Id, player, out var card) || card == null)
             return $"No card mapped for Art: {art.Id}";
 
-        OrbmentCombatState.MarkArtUsedThisTurn();
+        OrbmentCombatState.UseCast();
 
         if (art.IsHealing)
             OrbmentCombatState.UsedHealingArts.Add(art.Id);

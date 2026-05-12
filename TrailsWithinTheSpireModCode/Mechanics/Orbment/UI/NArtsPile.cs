@@ -1,12 +1,21 @@
 using Godot;
 using BaseLib.Abstracts;
 using BaseLib.Utils;
+using MegaCrit.Sts2.Core.CardSelection;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.Combat;
-using MegaCrit.Sts2.Core.Nodes.Screens;
+using MegaCrit.Sts2.Core.Nodes.HoverTips;
 using MegaCrit.Sts2.Core.Nodes.Screens.Capstones;
+using MegaCrit.Sts2.Core.Nodes.Screens.CardSelection;
+using MegaCrit.Sts2.Core.Nodes.Screens.Overlays;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment.UI;
 
@@ -16,12 +25,23 @@ public partial class NArtsPile : NCombatCardPile
 
     protected override PileType Pile => ArtsCardPile.ArtsPileType;
 
+    private const string OrbalArtsButtonIconPath =
+        "res://TrailsWithinTheSpireMod/assets/orbal_arts_button.png";
+
     private const string ElementalTotalsPanelName = "OrbalArtsElementalTotalsPanel";
+
+    private static readonly Vector2 ButtonSize = new(92f, 92f);
+    private static readonly Vector2 CountBadgeSize = new(46f, 46f);
 
     private CardPile? _pile;
     private Player? _localPlayer;
-    private TrailsMegaLabel? _artsCountLabel;
-    private NCardPileScreen? _activeScreen;
+
+    private TextureRect? _icon;
+    private Control? _countContainer;
+    private TextureRect? _countBackground;
+    private TrailsMegaLabel? _countLabel;
+
+    private int _lastDisplayedRemainingCasts = -1;
 
     public static AddedNode<NCombatPilesContainer, NArtsPile> OverlayNode = new(c =>
     {
@@ -29,11 +49,12 @@ public partial class NArtsPile : NCombatCardPile
         var overlayInstance = overlayScene.Instantiate<NArtsPile>();
 
         overlayInstance.Name = "_ArtsPile";
-
         Instance = overlayInstance;
 
-        overlayInstance.CustomMinimumSize = new Vector2(150, 60);
-        overlayInstance.Position = new Vector2(0, 600);
+        overlayInstance.CustomMinimumSize = ButtonSize;
+        overlayInstance.Size = ButtonSize;
+
+        overlayInstance.Position = new Vector2(18f, 670f);
 
         return overlayInstance;
     });
@@ -44,65 +65,22 @@ public partial class NArtsPile : NCombatCardPile
 
         Instance = this;
 
-        GetNodeOrNull<TextureRect>("Icon")?.Hide();
-        GetNodeOrNull<Control>("CountContainer")?.Hide();
+        CustomMinimumSize = ButtonSize;
+        Size = ButtonSize;
+        ClipContents = false;
+        MouseFilter = MouseFilterEnum.Stop;
 
-        var bgColor = Color.FromHtml("7b1b16");
-        var textColor = Color.FromHtml("ffeecd");
-        var strokeColor = Color.FromHtml("3d0c08");
+        _icon = GetNodeOrNull<TextureRect>("Icon");
+        _countContainer = GetNodeOrNull<Control>("CountContainer");
+        _countBackground = GetNodeOrNull<TextureRect>("CountContainer/Background");
+        _countLabel = GetNodeOrNull<TrailsMegaLabel>("CountContainer/Count");
 
-        var body = new ColorRect
-        {
-            Name = "ArtsButtonBackground",
-            Color = bgColor,
-            MouseFilter = MouseFilterEnum.Ignore
-        };
+        SetupIcon();
+        SetupCountBadge();
 
-        body.SetAnchorsPreset(LayoutPreset.FullRect);
-        AddChild(body);
-        MoveChild(body, 0);
+        RefreshCastCount();
 
-        var border = new Panel
-        {
-            Name = "ArtsButtonBorder",
-            MouseFilter = MouseFilterEnum.Ignore
-        };
-
-        border.SetAnchorsPreset(LayoutPreset.FullRect);
-
-        var borderStyle = new StyleBoxFlat
-        {
-            DrawCenter = false,
-            BorderWidthLeft = 4,
-            BorderWidthTop = 4,
-            BorderWidthRight = 4,
-            BorderWidthBottom = 4,
-            BorderColor = strokeColor,
-            ExpandMarginLeft = 2,
-            ExpandMarginRight = 2,
-            ExpandMarginTop = 2,
-            ExpandMarginBottom = 2
-        };
-
-        border.AddThemeStyleboxOverride("panel", borderStyle);
-        AddChild(border);
-
-        var titleLabel = new Label
-        {
-            Name = "ArtsButtonLabel",
-            Text = "ORBAL ARTS",
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-            MouseFilter = MouseFilterEnum.Ignore
-        };
-
-        titleLabel.SetAnchorsPreset(LayoutPreset.FullRect);
-        titleLabel.AddThemeColorOverride("font_color", textColor);
-        titleLabel.AddThemeConstantOverride("outline_size", 8);
-        titleLabel.AddThemeColorOverride("font_outline_color", strokeColor);
-        titleLabel.AddThemeFontSizeOverride("font_size", 16);
-
-        AddChild(titleLabel);
+        OrbmentCombatState.StateChanged += RefreshCastCount;
     }
 
     public override void Initialize(Player player)
@@ -110,92 +88,226 @@ public partial class NArtsPile : NCombatCardPile
         _localPlayer = player;
         _pile = ArtsCardPile.ArtsPileType.GetPile(player);
 
-        var container = GetParent();
-
-        if (container != null)
-        {
-            if (container.GetNodeOrNull<NCastArtButton>("NCastArtButton") == null)
-            {
-                var castButton = NCastArtButton.Create();
-
-                container.AddChild(castButton);
-
-                castButton.Position = new Vector2(0, 700);
-                castButton.Initialize(player);
-
-                GD.Print("ARTS_LOG: Cast Button injected via Overlay initialization.");
-            }
-        }
-
         if (_pile != null)
-        {
             _pile.ContentsChanged += HandleContentsChanged;
-            HandleContentsChanged();
 
-            Visible = true;
-            Enable();
-        }
-        else
+        Visible = true;
+        Enable();
+
+        RefreshCastCount();
+
+        GD.Print("ARTS_LOG: Single Orbal Arts button initialized.");
+    }
+
+    private void SetupIcon()
+    {
+        if (_icon == null)
         {
-            GD.PrintErr("ARTS_LOG: Arts pile was null during NArtsPile.Initialize.");
+            GD.PrintErr("ARTS_LOG: ArtsPile Icon node not found.");
+            return;
+        }
+
+        _icon.Visible = true;
+        _icon.MouseFilter = MouseFilterEnum.Ignore;
+        _icon.CustomMinimumSize = Vector2.Zero;
+        _icon.Size = ButtonSize;
+        _icon.SetAnchorsPreset(LayoutPreset.FullRect);
+        _icon.SetOffsetsPreset(LayoutPreset.FullRect);
+        _icon.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+        _icon.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+
+        var texture = GD.Load<Texture2D>(OrbalArtsButtonIconPath);
+
+        if (texture == null)
+        {
+            GD.PrintErr($"ARTS_LOG: Could not load Orbal Arts button icon at '{OrbalArtsButtonIconPath}'.");
+            return;
+        }
+
+        _icon.Texture = texture;
+    }
+
+    private void SetupCountBadge()
+    {
+        if (_countContainer != null)
+        {
+            _countContainer.Visible = true;
+            _countContainer.MouseFilter = MouseFilterEnum.Ignore;
+            _countContainer.CustomMinimumSize = CountBadgeSize;
+            _countContainer.Size = CountBadgeSize;
+            _countContainer.SetAnchorsPreset(LayoutPreset.BottomRight);
+
+            _countContainer.OffsetLeft = -CountBadgeSize.X + 5f;
+            _countContainer.OffsetTop = -CountBadgeSize.Y + 5f;
+            _countContainer.OffsetRight = 10f;
+            _countContainer.OffsetBottom = 10f;
+        }
+
+        if (_countBackground != null)
+        {
+            _countBackground.Visible = true;
+            _countBackground.MouseFilter = MouseFilterEnum.Ignore;
+            _countBackground.CustomMinimumSize = CountBadgeSize;
+            _countBackground.Size = CountBadgeSize;
+            _countBackground.SetAnchorsPreset(LayoutPreset.FullRect);
+            _countBackground.SetOffsetsPreset(LayoutPreset.FullRect);
+            _countBackground.ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize;
+            _countBackground.StretchMode = TextureRect.StretchModeEnum.Scale;
+        }
+
+        if (_countLabel != null)
+        {
+            _countLabel.Visible = true;
+            _countLabel.MouseFilter = MouseFilterEnum.Ignore;
+            _countLabel.SetAnchorsPreset(LayoutPreset.FullRect);
+            _countLabel.SetOffsetsPreset(LayoutPreset.FullRect);
+            _countLabel.HorizontalAlignment = HorizontalAlignment.Center;
+            _countLabel.VerticalAlignment = VerticalAlignment.Center;
+            _countLabel.AddThemeFontSizeOverride("font_size", 24);
+            _countLabel.AddThemeConstantOverride("outline_size", 6);
+            _countLabel.AddThemeColorOverride("font_outline_color", Colors.Black);
         }
     }
 
     private void HandleContentsChanged()
     {
-        if (_artsCountLabel == null)
-            _artsCountLabel = GetNodeOrNull<TrailsMegaLabel>("%ArtsCountLabel");
+        RefreshCastCount();
+    }
 
-        if (_pile != null && _artsCountLabel != null)
-            _artsCountLabel.SetTextAutoSize(_pile.Cards.Count.ToString());
+    public void RefreshCastCount()
+    {
+        var remainingCasts = OrbmentCombatState.RemainingCastsThisTurn;
+
+        if (_lastDisplayedRemainingCasts == remainingCasts)
+            return;
+
+        _lastDisplayedRemainingCasts = remainingCasts;
+
+        if (_countLabel != null)
+            _countLabel.SetTextAutoSize(remainingCasts.ToString());
+    }
+
+    public override void _Process(double delta)
+    {
+        RefreshCastCount();
     }
 
     protected override void OnRelease()
     {
-        if (_pile == null)
+        if (_localPlayer == null)
         {
-            GD.PrintErr("ARTS_LOG: Cannot open Orbal Arts screen because _pile is null.");
+            GD.PrintErr("ARTS_LOG: Cannot open Orbal Arts screen because _localPlayer is null.");
             return;
         }
 
-        NCapstoneContainer.Instance?.Close();
-
-        _activeScreen = NCardPileScreen.ShowScreen(_pile, new[] { "ui_cancel" });
-
-        if (_activeScreen != null)
-        {
-            Callable.From(() => AddOrRefreshElementalTotalsPanel(_activeScreen)).CallDeferred();
-        }
-        else
-        {
-            GD.PrintErr("ARTS_LOG: NCardPileScreen.ShowScreen returned null for Orbal Arts.");
-        }
+        TaskHelper.RunSafely(OpenOrbalArtsSelectionScreen());
     }
 
-    private static void AddOrRefreshElementalTotalsPanel(NCardPileScreen screen)
+    private async Task OpenOrbalArtsSelectionScreen()
+    {
+        if (_localPlayer == null)
+            return;
+
+        var artCards = new List<CardModel>();
+        var selectableCards = new HashSet<CardModel>();
+
+        var totals = OrbmentManager.Current.GetElementTotals();
+
+        foreach (var art in ArtDatabase.All)
+        {
+            if (!ArtCardFactory.TryCreate(art.Id, _localPlayer, out var card) || card == null)
+            {
+                GD.PrintErr($"ARTS_LOG: Could not create card for Art '{art.Id}'.");
+                continue;
+            }
+
+            artCards.Add(card);
+
+            if (ArtResolver.MeetsRequirements(art, totals) &&
+                OrbmentCastService.CanCastArt(art.Id, out _))
+            {
+                selectableCards.Add(card);
+            }
+        }
+
+        if (artCards.Count == 0)
+        {
+            GD.PrintErr("ARTS_LOG: No Art cards could be created.");
+            return;
+        }
+
+        var prefs = new CardSelectorPrefs(new LocString("cards", "ChooseAnOrbalArt"), 0, 1)
+        {
+            RequireManualConfirmation = true,
+            Cancelable = true,
+            PretendCardsCanBePlayed = true
+        };
+
+        NCapstoneContainer.Instance?.Close();
+
+        var screen = NSimpleCardSelectScreen.Create(artCards, prefs);
+
+        NOrbalArtsSelectionRegistry.Register(screen, artCards, selectableCards);
+
+        NOverlayStack.Instance.Push(screen);
+
+        Callable.From(() => AddOrRefreshElementalTotalsPanel(screen)).CallDeferred();
+
+        IEnumerable<CardModel> selectedCards;
+
+        try
+        {
+            selectedCards = await screen.CardsSelected();
+        }
+        finally
+        {
+            NOrbalArtsSelectionRegistry.Unregister(screen);
+        }
+
+        var selectedCard = selectedCards.FirstOrDefault();
+
+        if (selectedCard == null)
+        {
+            GD.Print("ARTS_LOG: Orbal Arts screen closed without selecting an Art.");
+            return;
+        }
+
+        if (selectedCard is not IArtCard selectedArtCard)
+            return;
+
+        if (!OrbmentCastService.CanCastArt(selectedArtCard.ArtId, out var failureReason))
+        {
+            GD.Print($"ARTS_LOG: Cannot cast {selectedArtCard.ArtId}: {failureReason}");
+            return;
+        }
+
+        var result = await OrbmentCastService.CastArt(_localPlayer, selectedArtCard.ArtId);
+
+        GD.Print($"ARTS_LOG: {result}");
+
+        RefreshCastCount();
+    }
+
+    private static void AddOrRefreshElementalTotalsPanel(NSimpleCardSelectScreen screen)
     {
         if (!GodotObject.IsInstanceValid(screen))
             return;
 
-        if (screen.Pile == null || screen.Pile.Type != ArtsCardPile.ArtsPileType)
-            return;
-
-        var existing = screen.GetNodeOrNull<Control>(NOrbalArtsElementalTotalsPanel.NodeName);
+        var existing = screen.GetNodeOrNull<Control>(ElementalTotalsPanelName);
 
         if (existing != null)
         {
             NOrbalArtsElementalTotalsPanel.Refresh(existing);
-            GD.Print("ARTS_LOG: Refreshed existing elemental totals panel.");
             return;
         }
 
         var panel = NOrbalArtsElementalTotalsPanel.Create();
+        panel.Name = ElementalTotalsPanelName;
 
         screen.AddChild(panel);
 
         panel.SetAnchorsPreset(LayoutPreset.TopRight);
 
-        // Right-side column placement.
         panel.OffsetLeft = -260f;
         panel.OffsetRight = -70f;
         panel.OffsetTop = 260f;
@@ -203,12 +315,17 @@ public partial class NArtsPile : NCombatCardPile
 
         NOrbalArtsElementalTotalsPanel.Refresh(panel);
 
-        GD.Print("ARTS_LOG: Added elemental totals panel directly from NArtsPile.OnRelease.");
+        GD.Print("ARTS_LOG: Added elemental totals panel to Orbal Arts selection screen.");
     }
+
     public override void _ExitTree()
     {
+        OrbmentCombatState.StateChanged -= RefreshCastCount;
+
         if (_pile != null)
             _pile.ContentsChanged -= HandleContentsChanged;
+
+        NHoverTipSet.Remove(this);
 
         base._ExitTree();
     }
@@ -217,6 +334,17 @@ public partial class NArtsPile : NCombatCardPile
     {
         base.OnFocus();
 
+        var hoverTip = new HoverTip(
+            new LocString("cards", "ORBAL_ARTS_BUTTON.title"),
+            new LocString("cards", "ORBAL_ARTS_BUTTON.description")
+        );
+
+        var hoverTipSet = NHoverTipSet.CreateAndShow(this, hoverTip);
+
+        hoverTipSet?.SetGlobalPosition(
+            GlobalPosition + new Vector2(Size.X + 14f, -44f)
+        );
+
         var tween = CreateTween();
         tween.TweenProperty(this, "scale", new Vector2(1.1f, 1.1f), 0.1);
     }
@@ -224,6 +352,8 @@ public partial class NArtsPile : NCombatCardPile
     protected override void OnUnfocus()
     {
         base.OnUnfocus();
+
+        NHoverTipSet.Remove(this);
 
         var tween = CreateTween();
         tween.TweenProperty(this, "scale", Vector2.One, 0.1);

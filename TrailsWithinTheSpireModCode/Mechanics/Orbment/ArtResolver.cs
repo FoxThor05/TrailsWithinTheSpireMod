@@ -12,7 +12,7 @@ public static class ArtResolver
             .ToList();
     }
 
-    private static bool MeetsRequirements(ArtDefinition art, Dictionary<Element, int> totals)
+    public static bool MeetsRequirements(ArtDefinition art, Dictionary<Element, int> totals)
     {
         foreach (var req in art.Requirements)
         {

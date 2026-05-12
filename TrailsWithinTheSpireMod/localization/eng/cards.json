@@ -1,7 +1,7 @@
 {
-  "TRAILSWITHINTHESPIREMOD-CREST.description": "#Gain !B! Block.",
+  "TRAILSWITHINTHESPIREMOD-CREST.description": "#Gain !B! [gold]Block[/gold].",
   "TRAILSWITHINTHESPIREMOD-CREST.title": "Crest",
-  "TRAILSWITHINTHESPIREMOD-FIRE_BOLT.description": "#Deal !D! Damage.",
+  "TRAILSWITHINTHESPIREMOD-FIRE_BOLT.description": "#Deal !D! damage.",
   "TRAILSWITHINTHESPIREMOD-FIRE_BOLT.title": "Fire Bolt",
   "TRAILSWITHINTHESPIREMOD-TEAR.description": "#Heal !H! HP.",
   "TRAILSWITHINTHESPIREMOD-TEAR.title": "Tear",
@@ -9,7 +9,7 @@
   "TRAILSWITHINTHESPIREMOD-CAST.selectionScreenPrompt": "Select {CardsSelected:diff()} {CardsSelected:plural:card|cards} to put in your Hand.",
   "TRAILSWITHINTHESPIREMOD-CAST.title": "Cast",
   "attack_1.title": "Attack 1",
-  "attack_1.description": "A basic Fire quartz.",
+  "attack_1.description": "[blue]1[/blue] [color=#F61515]Fire[/color]\n\nGain 1 [gold]Strength[/gold] at the start of combat.",
 
   "guard_1.title": "Defense 1",
   "guard_1.description": "A basic Earth quartz.",
@@ -18,8 +18,12 @@
   "mind_1.description": "A basic Mirage quartz.",
 
   "hp_1.title": "HP 1",
-  "hp_1.description": "A basic Water quartz.",
+  "hp_1.description": "[blue]1[/blue] [color=#559AFF]Water[/color]\n\nRaise your Max HP by [blue]4[/blue].",
 
-  "ORBMENT_BUTTON.title": "Orbment",
-  "ORBMENT_BUTTON.description": "Open the Battle Orbment menu."
+  "ORBMENT_BUTTON.title": "Battle Orbment",
+  "ORBMENT_BUTTON.description": "Click to open the Battle Orbment menu, only while outside of Combat.\n\nHere you can change which [gold]Quartz[/gold] are slotted, granting various effects.",
+  "ChooseAnOrbalArt": "Choose an Orbal Art.\nConfirm with no selection to close.",
+
+  "ORBAL_ARTS_BUTTON.title": "Orbal Arts",
+  "ORBAL_ARTS_BUTTON.description": "Click to view your Orbal Arts.\n\nThe number shows how many casts you have left this turn.\n\nChoose a castable Art to add it to your hand." 
 }

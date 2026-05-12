@@ -3,8 +3,8 @@ using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models.Relics;
+using MegaCrit.Sts2.Core.Rooms;
 using System.Threading.Tasks;
-using Godot;
 using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
 
 namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Relics;
@@ -23,16 +23,26 @@ public sealed class BattleOrbment : TrailsWithinTheSpireModRelic
         if (string.IsNullOrWhiteSpace(OrbmentRelicFields.OwnedQuartz[this]))
             OrbmentRelicFields.OwnedQuartz[this] = "";
 
-        await Task.CompletedTask;
+        QuartzEffectDispatcher.RegisterBattleOrbment(this);
+        await QuartzEffectDispatcher.ApplyPassiveEffects(this);
+    }
+
+    public override async Task AfterRoomEntered(AbstractRoom room)
+    {
+        QuartzEffectDispatcher.RegisterBattleOrbment(this);
+        await QuartzEffectDispatcher.ApplyPassiveEffects(this);
+
+        if (room is CombatRoom)
+        {
+            OrbmentCombatState.ResetCombat();
+            await QuartzEffectDispatcher.TriggerCombatStartEffects(this, room);
+        }
     }
 
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {
         if (LocalContext.IsMe(player))
-        {
             OrbmentCombatState.ResetTurn();
-            GD.Print("ARTS_LOG: OrbmentCombatState.ResetTurn() called via BattleOrbment.AfterPlayerTurnStart.");
-        }
 
         await Task.CompletedTask;
     }

@@ -1,4 +1,6 @@
 using Godot;
+using MegaCrit.Sts2.Core.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,10 +14,14 @@ public static class OrbmentManager
 
     public static IReadOnlyList<string> OwnedQuartzIds => _ownedQuartzIds;
 
+    public static event Action? OrbmentChanged;
+
     public static void Reset()
     {
         Current = new BattleOrbmentState();
         _ownedQuartzIds.Clear();
+
+        NotifyOrbmentChanged();
     }
 
     public static void AddQuartz(string quartzId)
@@ -29,11 +35,28 @@ public static class OrbmentManager
         _ownedQuartzIds.Add(quartzId);
 
         GD.Print($"ORBMENT_LOG: Added quartz '{quartzId}'. Owned quartz count: {_ownedQuartzIds.Count}");
+
+        NotifyOrbmentChanged();
     }
 
     public static int CountOwnedQuartz(string quartzId)
     {
         return _ownedQuartzIds.Count(id => id == quartzId);
+    }
+
+    public static IReadOnlyList<QuartzDefinition> GetEquippedQuartz()
+    {
+        var equippedQuartz = new List<QuartzDefinition>();
+
+        for (var i = 0; i < BattleOrbmentState.MaxSlots; i++)
+        {
+            var quartz = Current.GetSlotQuartz(i);
+
+            if (quartz != null)
+                equippedQuartz.Add(quartz);
+        }
+
+        return equippedQuartz;
     }
 
     public static bool EquipOwnedQuartzToSlot(string quartzId, int slotIndex)
@@ -67,6 +90,8 @@ public static class OrbmentManager
 
         GD.Print($"ORBMENT_LOG: Equipped inventory quartz '{quartzId}' to slot {slotIndex}.");
 
+        NotifyOrbmentChanged();
+
         return true;
     }
 
@@ -96,6 +121,8 @@ public static class OrbmentManager
 
         GD.Print($"ORBMENT_LOG: Moved quartz from slot {sourceSlotIndex} to slot {targetSlotIndex}.");
 
+        NotifyOrbmentChanged();
+
         return true;
     }
 
@@ -119,7 +146,16 @@ public static class OrbmentManager
 
         GD.Print($"ORBMENT_LOG: Unequipped '{removedQuartz.Id}' from slot {slotIndex} to inventory.");
 
+        NotifyOrbmentChanged();
+
         return true;
+    }
+
+    public static void NotifyOrbmentChanged()
+    {
+        OrbmentChanged?.Invoke();
+
+        TaskHelper.RunSafely(QuartzEffectDispatcher.ApplyPassiveEffectsFromActiveBattleOrbment());
     }
 
     private static bool RemoveOwnedQuartzNoNotify(string quartzId)
