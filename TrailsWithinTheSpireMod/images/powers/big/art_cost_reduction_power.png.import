@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://drdqnepsn2anv"
-path="res://.godot/imported/spacequartz.png-ca5fda0c4a2d62206c41b1f7fc079097.ctex"
+uid="uid://b2eugdj6qpp5n"
+path="res://.godot/imported/art_cost_reduction_power.png-3c8051c41c377dc2e5192322cf895bc1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://TrailsWithinTheSpireMod/assets/elements/spacequartz.png"
-dest_files=["res://.godot/imported/spacequartz.png-ca5fda0c4a2d62206c41b1f7fc079097.ctex"]
+source_file="res://TrailsWithinTheSpireMod/images/powers/big/art_cost_reduction_power.png"
+dest_files=["res://.godot/imported/art_cost_reduction_power.png-3c8051c41c377dc2e5192322cf895bc1.ctex"]
 
 [params]
 

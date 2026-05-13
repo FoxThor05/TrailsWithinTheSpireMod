@@ -3,7 +3,8 @@ using Godot;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Modding;
 using System;
-using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment; // For Exception
+using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
+using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment.Rewards; // For Exception
 using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment.UI; // For ArtsCardPile
 
 namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode;
@@ -24,6 +25,7 @@ public partial class MainFile : Node
         // Use Harmony.PatchAll to automatically discover and apply all patches in this assembly
         try
         {
+            QuartzRewardRegistry.Register();
             harmony.PatchAll(Assembly.GetExecutingAssembly());
             GD.Print($"MainFile: Successfully applied Harmony patches via PatchAll.");
         }

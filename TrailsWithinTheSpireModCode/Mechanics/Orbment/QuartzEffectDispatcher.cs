@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Powers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Rooms;
@@ -15,11 +16,6 @@ namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
 
 public static class QuartzEffectDispatcher
 {
-    private const int Attack1StrengthBonus = 1;
-
-    // Balance value for HP 1.
-    private const int Hp1MaxHpBonus = 4;
-
     private static BattleOrbment? _activeBattleOrbment;
 
     public static void RegisterBattleOrbment(BattleOrbment battleOrbment)
@@ -49,6 +45,8 @@ public static class QuartzEffectDispatcher
         }
 
         await ApplyHpQuartzPassive(battleOrbment, creature);
+
+        OrbmentCombatState.RefreshMaxCastsForCurrentTurn();
     }
 
     public static async Task TriggerCombatStartEffects(BattleOrbment battleOrbment, AbstractRoom room)
@@ -61,14 +59,11 @@ public static class QuartzEffectDispatcher
         await ApplyPassiveEffects(battleOrbment);
 
         var creature = battleOrbment.Owner.Creature;
-        var equippedQuartz = OrbmentManager.GetEquippedQuartz();
 
-        var attack1Count = equippedQuartz.Count(q => q.Id == "attack_1");
+        var strengthAmount = GetCombatStartStrengthBonus();
 
-        if (attack1Count > 0)
+        if (strengthAmount > 0)
         {
-            var strengthAmount = attack1Count * Attack1StrengthBonus;
-
             battleOrbment.Flash();
 
             await PowerCmd.Apply<StrengthPower>(
@@ -81,6 +76,86 @@ public static class QuartzEffectDispatcher
 
             GD.Print($"ORBMENT_LOG: BattleOrbment applied +{strengthAmount} Strength from Attack Quartz.");
         }
+
+        var dexterityAmount = GetCombatStartDexterityBonus();
+
+        if (dexterityAmount > 0)
+        {
+            battleOrbment.Flash();
+
+            await PowerCmd.Apply<DexterityPower>(
+                new ThrowingPlayerChoiceContext(),
+                creature,
+                dexterityAmount,
+                creature,
+                (CardModel?)null
+            );
+
+            GD.Print($"ORBMENT_LOG: BattleOrbment applied +{dexterityAmount} Dexterity from Defense Quartz.");
+        }
+    }
+    public static int GetEpCutStacksPerTurn()
+    {
+        var equippedQuartz = OrbmentManager.GetEquippedQuartz();
+
+        var stacks = 0;
+
+        foreach (var quartz in equippedQuartz)
+        {
+            stacks += quartz.Id switch
+            {
+                "ep_cut_1" => 1,
+                "ep_cut_2" => 2,
+                "ep_cut_3" => 3,
+                _ => 0
+            };
+        }
+
+        return stacks;
+    }
+
+    public static async Task ApplyTurnStartEpCut()
+    {
+        if (_activeBattleOrbment?.Owner?.Creature == null)
+            return;
+
+        var stacks = GetEpCutStacksPerTurn();
+
+        if (stacks <= 0)
+            return;
+
+        var creature = _activeBattleOrbment.Owner.Creature;
+
+        _activeBattleOrbment.Flash();
+
+        await PowerCmd.Apply<ArtCostReductionPower>(
+            new ThrowingPlayerChoiceContext(),
+            creature,
+            stacks,
+            creature,
+            null
+        );
+
+        GD.Print($"ORBMENT_LOG: BattleOrbment applied {stacks} EP Cut stack(s) from EP Cut Quartz.");
+    }
+    public static int GetAdditionalCastsPerTurn()
+    {
+        var equippedQuartz = OrbmentManager.GetEquippedQuartz();
+
+        var additionalCasts = 0;
+
+        foreach (var quartz in equippedQuartz)
+        {
+            additionalCasts += quartz.Id switch
+            {
+                "cast_1" => 1,
+                "cast_2" => 2,
+                "cast_3" => 3,
+                _ => 0
+            };
+        }
+
+        return additionalCasts;
     }
 
     private static async Task ApplyHpQuartzPassive(BattleOrbment battleOrbment, Creature creature)
@@ -118,8 +193,61 @@ public static class QuartzEffectDispatcher
 
     private static int GetDesiredMaxHpBonus()
     {
-        var hp1Count = OrbmentManager.GetEquippedQuartz().Count(q => q.Id == "hp_1");
+        var equippedQuartz = OrbmentManager.GetEquippedQuartz();
 
-        return hp1Count * Hp1MaxHpBonus;
+        var maxHpBonus = 0;
+
+        foreach (var quartz in equippedQuartz)
+        {
+            maxHpBonus += quartz.Id switch
+            {
+                "hp_1" => 4,
+                "hp_2" => 8,
+                "hp_3" => 12,
+                _ => 0
+            };
+        }
+
+        return maxHpBonus;
+    }
+
+    private static int GetCombatStartStrengthBonus()
+    {
+        var equippedQuartz = OrbmentManager.GetEquippedQuartz();
+
+        var strengthBonus = 0;
+
+        foreach (var quartz in equippedQuartz)
+        {
+            strengthBonus += quartz.Id switch
+            {
+                "attack_1" => 1,
+                "attack_2" => 2,
+                "attack_3" => 3,
+                _ => 0
+            };
+        }
+
+        return strengthBonus;
+    }
+
+    private static int GetCombatStartDexterityBonus()
+    {
+        var equippedQuartz = OrbmentManager.GetEquippedQuartz();
+
+        var dexterityBonus = 0;
+
+        foreach (var quartz in equippedQuartz)
+        {
+            dexterityBonus += quartz.Id switch
+            {
+                "defense_1" => 1,
+                "defense_2" => 2,
+                "defense_3" => 3,
+                _ => 0
+            };
+        }
+
+        return dexterityBonus;
     }
 }

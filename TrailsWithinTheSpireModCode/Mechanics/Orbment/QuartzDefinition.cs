@@ -4,11 +4,13 @@ namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
 
 public class QuartzDefinition
 {
-    public string Id { get; set; } = "";
+    public string Id { get; init; } = "";
 
-    public Dictionary<Element, int> ElementValues { get; set; } = new();
+    public int RewardSaveId { get; init; }
 
-    public int Tier { get; set; }
+    public Dictionary<Element, int> ElementValues { get; init; } = new();
 
-    public string IconPath { get; set; } = "";
+    public int Tier { get; init; }
+
+    public string IconPath { get; init; } = "";
 }

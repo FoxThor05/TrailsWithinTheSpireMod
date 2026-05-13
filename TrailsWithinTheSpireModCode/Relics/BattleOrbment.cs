@@ -39,6 +39,7 @@ public sealed class BattleOrbment : TrailsWithinTheSpireModRelic
     {
         if (LocalContext.IsMe(player))
             OrbmentCombatState.ResetTurn();
+        await QuartzEffectDispatcher.ApplyTurnStartEpCut();
 
         await Task.CompletedTask;
     }

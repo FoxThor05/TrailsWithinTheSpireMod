@@ -4,5 +4,9 @@
   "TRAILSWITHINTHESPIREMOD-STRONG_POWER.title": "Strong",
   "TRAILSWITHINTHESPIREMOD-STURDY_POWER.description": "Gain [blue]33%[/blue] more [gold]Block[/gold] from cards.",
   "TRAILSWITHINTHESPIREMOD-STURDY_POWER.smartDescription": "Gain [blue]33%[/blue] more [gold]Block[/gold] from cards for [blue]{Amount}[/blue] {Amount:plural:turn|turns}.",
-  "TRAILSWITHINTHESPIREMOD-STURDY_POWER.title": "Sturdy"
+  "TRAILSWITHINTHESPIREMOD-STURDY_POWER.title": "Sturdy",
+  "TRAILSWITHINTHESPIREMOD-ART_COST_REDUCTION_POWER.title": "EP Cut",
+  "TRAILSWITHINTHESPIREMOD-ART_COST_REDUCTION_POWER.description": "The next Orbal Art you play costs [blue]1[/blue] less {energyPrefix:energyIcons(1)}.",
+  "TRAILSWITHINTHESPIREMOD-ART_COST_REDUCTION_POWER.smartDescription": "The next Orbal Arts you play this turn have their {energyPrefix:energyIcons(1)} cost reduced by a total of [blue]{Amount}[/blue]."
+
 }

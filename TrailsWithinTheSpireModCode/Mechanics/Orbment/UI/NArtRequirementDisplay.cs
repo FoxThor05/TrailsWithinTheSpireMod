@@ -20,8 +20,8 @@ public partial class NArtRequirementDisplay : Control
     };
 
     private const float PanelWidth = 54f;
-    private const float RowHeight = 32f;
-    private const float IconSize = 24f;
+    private const float RowHeight = 36f;
+    private const float IconSize = 28f;
 
     public void SetRequirements(IReadOnlyDictionary<Element, int> requirements)
     {

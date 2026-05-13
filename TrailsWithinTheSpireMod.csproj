@@ -65,7 +65,6 @@
         <Folder Include="TrailsWithinTheSpireModCode\Patches\" />
         <Folder Include="TrailsWithinTheSpireMod\images\card_portraits\beta\" />
         <Folder Include="TrailsWithinTheSpireMod\images\card_portraits\big\"/>
-        <Folder Include="TrailsWithinTheSpireMod\images\powers\big\"/>
     </ItemGroup>
 
     <Target Name="CheckDependencyPaths">

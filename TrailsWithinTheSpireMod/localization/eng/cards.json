@@ -1,29 +1,88 @@
 {
   "TRAILSWITHINTHESPIREMOD-CREST.description": "#Gain !B! [gold]Block[/gold].",
   "TRAILSWITHINTHESPIREMOD-CREST.title": "Crest",
+
   "TRAILSWITHINTHESPIREMOD-FIRE_BOLT.description": "#Deal !D! damage.",
   "TRAILSWITHINTHESPIREMOD-FIRE_BOLT.title": "Fire Bolt",
+
   "TRAILSWITHINTHESPIREMOD-TEAR.description": "#Heal !H! HP.",
   "TRAILSWITHINTHESPIREMOD-TEAR.title": "Tear",
+
   "TRAILSWITHINTHESPIREMOD-CAST.description": "Choose an Orbal Art to move to your hand.",
   "TRAILSWITHINTHESPIREMOD-CAST.selectionScreenPrompt": "Select {CardsSelected:diff()} {CardsSelected:plural:card|cards} to put in your Hand.",
   "TRAILSWITHINTHESPIREMOD-CAST.title": "Cast",
-  "attack_1.title": "Attack 1",
-  "attack_1.description": "[blue]1[/blue] [color=#F61515]Fire[/color]\n\nGain 1 [gold]Strength[/gold] at the start of combat.",
 
-  "guard_1.title": "Defense 1",
-  "guard_1.description": "A basic Earth quartz.",
+  "defense_1.title": "Defense 1",
+  "defense_1.description": "[blue]1[/blue] [color=#BA7611]Earth[/color]\n\nGain [blue]1[/blue] [gold]Dexterity[/gold] at the start of combat.",
 
-  "mind_1.title": "Mind 1",
-  "mind_1.description": "A basic Mirage quartz.",
+  "defense_2.title": "Defense 2",
+  "defense_2.description": "[blue]3[/blue] [color=#BA7611]Earth[/color]\n\nGain [blue]2[/blue] [gold]Dexterity[/gold] at the start of combat.",
+
+  "defense_3.title": "Defense 3",
+  "defense_3.description": "[blue]5[/blue] [color=#BA7611]Earth[/color]\n\nGain [blue]3[/blue] [gold]Dexterity[/gold] at the start of combat.",
 
   "hp_1.title": "HP 1",
-  "hp_1.description": "[blue]1[/blue] [color=#559AFF]Water[/color]\n\nRaise your Max HP by [blue]4[/blue].",
+  "hp_1.description": "[blue]1[/blue] [color=#559AFF]Water[/color]\n\nRaise your Max HP by [blue]4[/blue] while equipped.",
+
+  "hp_2.title": "HP 2",
+  "hp_2.description": "[blue]3[/blue] [color=#559AFF]Water[/color]\n\nRaise your Max HP by [blue]8[/blue] while equipped.",
+
+  "hp_3.title": "HP 3",
+  "hp_3.description": "[blue]5[/blue] [color=#559AFF]Water[/color]\n\nRaise your Max HP by [blue]12[/blue] while equipped.",
+
+  "attack_1.title": "Attack 1",
+  "attack_1.description": "[blue]1[/blue] [color=#F61515]Fire[/color]\n\nGain [blue]1[/blue] [gold]Strength[/gold] at the start of combat.",
+
+  "attack_2.title": "Attack 2",
+  "attack_2.description": "[blue]3[/blue] [color=#F61515]Fire[/color]\n\nGain [blue]2[/blue] [gold]Strength[/gold] at the start of combat.",
+
+  "attack_3.title": "Attack 3",
+  "attack_3.description": "[blue]5[/blue] [color=#F61515]Fire[/color]\n\nGain [blue]3[/blue] [gold]Strength[/gold] at the start of combat.",
+
+  "evade_1.title": "Evade 1",
+  "evade_1.description": "[blue]1[/blue] [color=#4EF31C]Wind[/color]\n\nA Wind quartz. Its combat effect is not yet implemented.",
+
+  "evade_2.title": "Evade 2",
+  "evade_2.description": "[blue]3[/blue] [color=#4EF31C]Wind[/color]\n\nA Wind quartz. Its combat effect is not yet implemented.",
+
+  "evade_3.title": "Evade 3",
+  "evade_3.description": "[blue]5[/blue] [color=#4EF31C]Wind[/color]\n\nA Wind quartz. Its combat effect is not yet implemented.",
+
+  "cast_1.title": "Cast 1",
+  "cast_1.description": "[blue]2[/blue] [color=#131315]Time[/color], [blue]1[/blue] [color=#E5E5E5]Mirage[/color], [blue]1[/blue] [color=#F0E10C]Space[/color]\n\nGain [blue]1[/blue] additional Orbal Art cast each turn.",
+
+  "cast_2.title": "Cast 2",
+  "cast_2.description": "[blue]4[/blue] [color=#131315]Time[/color], [blue]2[/blue] [color=#E5E5E5]Mirage[/color], [blue]2[/blue] [color=#F0E10C]Space[/color]\n\nGain [blue]2[/blue] additional Orbal Art casts each turn.",
+
+  "cast_3.title": "Cast 3",
+  "cast_3.description": "[blue]6[/blue] [color=#131315]Time[/color], [blue]3[/blue] [color=#E5E5E5]Mirage[/color], [blue]3[/blue] [color=#F0E10C]Space[/color]\n\nGain [blue]3[/blue] additional Orbal Art casts each turn.",
+
+  "ep_cut_1.title": "EP Cut 1",
+  "ep_cut_1.description": "[blue]2[/blue] [color=#F0E10C]Space[/color], [blue]1[/blue] [color=#E5E5E5]Mirage[/color], [blue]1[/blue] [color=#131315]Time[/color]\n\nAt the start of each turn, gain [blue]1[/blue] Art Reduction Cost. This effect is not yet implemented.",
+
+  "ep_cut_2.title": "EP Cut 2",
+  "ep_cut_2.description": "[blue]4[/blue] [color=#F0E10C]Space[/color], [blue]2[/blue] [color=#E5E5E5]Mirage[/color], [blue]2[/blue] [color=#131315]Time[/color]\n\nAt the start of each turn, gain [blue]2[/blue] Art Reduction Cost. This effect is not yet implemented.",
+
+  "ep_cut_3.title": "EP Cut 3",
+  "ep_cut_3.description": "[blue]6[/blue] [color=#F0E10C]Space[/color], [blue]3[/blue] [color=#E5E5E5]Mirage[/color], [blue]3[/blue] [color=#131315]Time[/color]\n\nAt the start of each turn, gain [blue]3[/blue] Art Reduction Cost. This effect is not yet implemented.",
+
+  "ep_1.title": "EP 1",
+  "ep_1.description": "[blue]2[/blue] [color=#E5E5E5]Mirage[/color], [blue]1[/blue] [color=#F0E10C]Space[/color], [blue]1[/blue] [color=#131315]Time[/color]\n\nGain [blue]1[/blue] Energy at the start of your first turn. This effect is not yet implemented.",
+
+  "ep_2.title": "EP 2",
+  "ep_2.description": "[blue]4[/blue] [color=#E5E5E5]Mirage[/color], [blue]2[/blue] [color=#F0E10C]Space[/color], [blue]2[/blue] [color=#131315]Time[/color]\n\nGain [blue]1[/blue] Energy at the start of each of your first [blue]2[/blue] turns. This effect is not yet implemented.",
+
+  "ep_3.title": "EP 3",
+  "ep_3.description": "[blue]6[/blue] [color=#E5E5E5]Mirage[/color], [blue]3[/blue] [color=#F0E10C]Space[/color], [blue]3[/blue] [color=#131315]Time[/color]\n\nGain [blue]1[/blue] Energy at the start of each of your first [blue]3[/blue] turns. This effect is not yet implemented.",
+
+  "mind_1.title": "Mind 1",
+  "mind_1.description": "[blue]1[/blue] [color=#E5E5E5]Mirage[/color]\n\nLegacy Mirage quartz.",
 
   "ORBMENT_BUTTON.title": "Battle Orbment",
   "ORBMENT_BUTTON.description": "Click to open the Battle Orbment menu, only while outside of Combat.\n\nHere you can change which [gold]Quartz[/gold] are slotted, granting various effects.",
+
   "ChooseAnOrbalArt": "Choose an Orbal Art.\nConfirm with no selection to close.",
 
   "ORBAL_ARTS_BUTTON.title": "Orbal Arts",
-  "ORBAL_ARTS_BUTTON.description": "Click to view your Orbal Arts.\n\nThe number shows how many casts you have left this turn.\n\nChoose a castable Art to add it to your hand." 
+  "ORBAL_ARTS_BUTTON.description": "Click to view your Orbal Arts.\n\nThe number shows how many casts you have left this turn.\n\nChoose a castable Art to add it to your hand."
 }

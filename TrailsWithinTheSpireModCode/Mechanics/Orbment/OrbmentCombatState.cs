@@ -5,9 +5,11 @@ namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
 
 public static class OrbmentCombatState
 {
+    public const int BaseCastsPerTurn = 1;
+
     public static HashSet<string> UsedHealingArts { get; } = new();
 
-    public static int MaxCastsThisTurn { get; private set; } = 1;
+    public static int MaxCastsThisTurn { get; private set; } = BaseCastsPerTurn;
 
     public static int UsedCastsThisTurn { get; private set; }
 
@@ -16,6 +18,21 @@ public static class OrbmentCombatState
     public static bool UsedArtThisTurn => RemainingCastsThisTurn <= 0;
 
     public static event Action? StateChanged;
+
+    public static int GetCurrentMaxCastsPerTurn()
+    {
+        return BaseCastsPerTurn + QuartzEffectDispatcher.GetAdditionalCastsPerTurn();
+    }
+
+    public static void RefreshMaxCastsForCurrentTurn()
+    {
+        var newMaxCasts = GetCurrentMaxCastsPerTurn();
+
+        MaxCastsThisTurn = Math.Max(0, newMaxCasts);
+        UsedCastsThisTurn = Math.Min(UsedCastsThisTurn, MaxCastsThisTurn);
+
+        StateChanged?.Invoke();
+    }
 
     public static void SetMaxCastsThisTurn(int amount)
     {
@@ -40,7 +57,7 @@ public static class OrbmentCombatState
 
     public static void ResetTurn()
     {
-        MaxCastsThisTurn = 1;
+        MaxCastsThisTurn = GetCurrentMaxCastsPerTurn();
         UsedCastsThisTurn = 0;
         StateChanged?.Invoke();
     }

@@ -19,10 +19,10 @@ public static class NOrbalArtsElementalTotalsPanel
         Element.Mirage
     };
 
-    private const float PanelWidth = 150f;
-    private const float PanelHeight = 340f;
-    private const float RowHeight = 42f;
-    private const float IconSize = 30f;
+    private const float PanelWidth = 170f;
+    private const float PanelHeight = 360f;
+    private const float RowHeight = 44f;
+    private const float IconSize = 36f;
 
     public static Control Create()
     {
@@ -124,9 +124,9 @@ public static class NOrbalArtsElementalTotalsPanel
         {
             Name = "Rows",
             MouseFilter = Control.MouseFilterEnum.Ignore,
-            Position = new Vector2(18f, 44f),
-            CustomMinimumSize = new Vector2(PanelWidth - 36f, PanelHeight - 54f),
-            Size = new Vector2(PanelWidth - 36f, PanelHeight - 54f)
+            Position = new Vector2(22f, 46f),
+            CustomMinimumSize = new Vector2(PanelWidth - 44f, PanelHeight - 58f),
+            Size = new Vector2(PanelWidth - 44f, PanelHeight - 58f)
         };
 
         rows.AddThemeConstantOverride("separation", 0);
@@ -169,8 +169,8 @@ public static class NOrbalArtsElementalTotalsPanel
         {
             Name = "Value",
             Text = value.ToString(),
-            CustomMinimumSize = new Vector2(48f, RowHeight),
-            Size = new Vector2(48f, RowHeight),
+            CustomMinimumSize = new Vector2(56f, RowHeight),
+            Size = new Vector2(56f, RowHeight),
             HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment = VerticalAlignment.Center,
             MouseFilter = Control.MouseFilterEnum.Ignore
