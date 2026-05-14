@@ -5,6 +5,9 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models.Relics;
 using MegaCrit.Sts2.Core.Rooms;
 using System.Threading.Tasks;
+using MegaCrit.Sts2.Core.Entities.RestSite;
+using System.Collections.Generic;
+using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.RestSite;
 using TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Mechanics.Orbment;
 
 namespace TrailsWithinTheSpireMod.TrailsWithinTheSpireModCode.Relics;
@@ -34,7 +37,17 @@ public sealed class BattleOrbment : TrailsWithinTheSpireModRelic
             await QuartzEffectDispatcher.TriggerCombatStartEffects(this, room);
         }
     }
+    public override bool TryModifyRestSiteOptions(Player player, ICollection<RestSiteOption> options)
+    {
+        if (player != Owner)
+            return false;
 
+        OrbmentRelicFields.Normalize(this);
+
+        options.Add(new UnlockOrbmentSlotRestSiteOption(player, this));
+
+        return true;
+    }
     public override async Task AfterPlayerTurnStart(PlayerChoiceContext choiceContext, Player player)
     {
         if (LocalContext.IsMe(player))

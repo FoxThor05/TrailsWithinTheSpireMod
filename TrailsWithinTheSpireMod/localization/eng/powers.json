@@ -8,5 +8,4 @@
   "TRAILSWITHINTHESPIREMOD-ART_COST_REDUCTION_POWER.title": "EP Cut",
   "TRAILSWITHINTHESPIREMOD-ART_COST_REDUCTION_POWER.description": "The next Orbal Art you play costs [blue]1[/blue] less {energyPrefix:energyIcons(1)}.",
   "TRAILSWITHINTHESPIREMOD-ART_COST_REDUCTION_POWER.smartDescription": "The next Orbal Arts you play this turn have their {energyPrefix:energyIcons(1)} cost reduced by a total of [blue]{Amount}[/blue]."
-
 }

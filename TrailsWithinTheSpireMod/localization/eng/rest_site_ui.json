@@ -1,0 +1,5 @@
+﻿{
+  "OPTION_UNLOCK_ORBMENT_SLOT.name": "Unlock Orbment Slot",
+  "OPTION_UNLOCK_ORBMENT_SLOT.description": "Unlock an additional Battle Orbment slot.",
+  "OPTION_UNLOCK_ORBMENT_SLOT.descriptionDisabled": "All Battle Orbment slots are already unlocked."
+}
